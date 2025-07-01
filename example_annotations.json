@@ -1,0 +1,9 @@
+{
+  "docs/README.md": "Основная документация проекта CoreTwin Platform",
+  "docs/README.md#архитектура": "Подробное описание архитектуры системы",
+  "docs/authentication.md": "Документация по системе аутентификации",
+  "docs/authentication.md#jwt-токены": "Реализация JWT для авторизации",
+  "docs/companies.md": "API для работы с компаниями",
+  "docs/development-plan.md": "План разработки проекта по фазам",
+  "docs/development-plan.md#фаза-1-mvp": "Минимально жизнеспособный продукт"
+}

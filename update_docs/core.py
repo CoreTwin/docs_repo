@@ -195,99 +195,6 @@ def write_markdown_toc(toc, toc_md_path):
             f.write(f'- <a id="{anchor}"></a>[{file_path}]({file_path})\n')
 
 
-def normalize_text(text):
-    """Нормализует текст для сравнения"""
-    normalized = re.sub(r"[^\w\s]", "", text.lower())
-    return re.sub(r"\s+", " ", normalized).strip()
-
-
-def find_similar_titles(documents, threshold):
-    """Находит документы с похожими заголовками"""
-    groups = []
-    title_map = defaultdict(list)
-    
-    for doc in documents:
-        for header in doc["headers"]:
-            normalized_title = normalize_text(header["title"])
-            title_map[normalized_title].append((doc, header))
-    
-    processed = set()
-    for title1, docs1 in title_map.items():
-        if title1 in processed:
-            continue
-            
-        similar_group = [title1]
-        for title2, docs2 in title_map.items():
-            if title1 != title2 and title2 not in processed:
-                similarity = difflib.SequenceMatcher(None, title1, title2).ratio()
-                if similarity >= threshold:
-                    similar_group.append(title2)
-                    processed.add(title2)
-        
-        if len(similar_group) > 1:
-            files = []
-            for title in similar_group:
-                files.extend([doc["relative_path"] for doc, _ in title_map[title]])
-            
-            groups.append({
-                "type": "similar_titles",
-                "pattern": title1,
-                "files": list(set(files)),
-                "similarity_score": threshold
-            })
-        
-        processed.add(title1)
-    
-    return groups
-
-
-def find_similar_content(documents, threshold):
-    """Находит документы с похожим содержимым"""
-    groups = []
-    processed = set()
-    
-    for i, doc1 in enumerate(documents):
-        if i in processed:
-            continue
-            
-        similar_group = [doc1]
-        for j, doc2 in enumerate(documents[i+1:], i+1):
-            if j in processed:
-                continue
-                
-            content1 = normalize_text(doc1["content_preview"])
-            content2 = normalize_text(doc2["content_preview"])
-            
-            if len(content1) > 50 and len(content2) > 50:  # Только для файлов с достаточным содержимым
-                similarity = difflib.SequenceMatcher(None, content1, content2).ratio()
-                if similarity >= threshold:
-                    similar_group.append(doc2)
-                    processed.add(j)
-        
-        if len(similar_group) > 1:
-            groups.append({
-                "type": "similar_content",
-                "pattern": f"Похожее содержимое ({len(similar_group)} файлов)",
-                "files": [doc["relative_path"] for doc in similar_group],
-                "similarity_score": threshold
-            })
-        
-        processed.add(i)
-    
-    return groups
-
-
-def detect_duplicates(documents, similarity_threshold=0.8):
-    """Находит похожие формулировки в заголовках и содержимом"""
-    duplicate_groups = []
-    
-    title_groups = find_similar_titles(documents, similarity_threshold)
-    duplicate_groups.extend(title_groups)
-    
-    content_groups = find_similar_content(documents, similarity_threshold)
-    duplicate_groups.extend(content_groups)
-    
-    return duplicate_groups
 
 
 def get_file_title(entry):
@@ -297,15 +204,6 @@ def get_file_title(entry):
     return os.path.basename(entry["relative_path"])
 
 
-def find_file_duplicates(entry, duplicate_groups):
-    """Находит информацию о дубликатах для конкретного файла"""
-    duplicates = []
-    for group in duplicate_groups:
-        if entry["relative_path"] in group["files"]:
-            other_files = [f for f in group["files"] if f != entry["relative_path"]]
-            if other_files:
-                duplicates.append(f"{group['type']} в {', '.join(other_files[:2])}")
-    return "; ".join(duplicates)
 
 
 def find_project_root():
@@ -318,48 +216,151 @@ def find_project_root():
     return path
 
 
-def write_comprehensive_markdown_toc(toc, duplicate_groups, toc_md_path, metadata):
-    """Создает структурированное Markdown оглавление с информацией о дубликатах"""
+def find_exact_header_matches(files):
+    """Находит точные совпадения заголовков между файлами"""
+    header_matches = defaultdict(list)
+    
+    for entry in files:
+        for header in entry.get("headers", []):
+            title = header["title"].strip()
+            rel_path = entry.get("relative_path", entry.get("file", ""))
+            header_matches[title].append({
+                "file": rel_path,
+                "header_id": header["id"],
+                "level": header["level"],
+                "link": f"{rel_path}#{header['id']}"
+            })
+    
+    duplicates = {title: locations for title, locations in header_matches.items() 
+                 if len(locations) > 1}
+    
+    return duplicates
+
+
+def write_toc_from_json(toc_json_path, toc_md_path, annotations=None):
+    """Создает Markdown оглавление из существующего toc.json файла с перекрестными ссылками"""
+    if annotations is None:
+        annotations = {}
+    
+    with open(toc_json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    
+    if isinstance(data, dict) and "files" in data:
+        files = data["files"]
+        metadata = data.get("metadata", {})
+    else:
+        files = data
+        metadata = {"total_files": len(files)}
+    
+    header_duplicates = find_exact_header_matches(files)
+    
     with open(toc_md_path, "w", encoding="utf-8") as f:
-        f.write("# Комплексное оглавление проекта\n\n")
-        f.write(f"*Сгенерировано: {metadata['generated_at']}*  \n")
-        f.write(f"*Всего файлов: {metadata['total_files']} | Групп дубликатов: {len(duplicate_groups)}*\n\n")
+        f.write("# Оглавление проекта\n\n")
+        
+        if metadata.get("generated_at"):
+            f.write(f"*Сгенерировано: {metadata['generated_at']}*  \n")
+        f.write(f"*Всего файлов: {metadata.get('total_files', len(files))}*\n")
+        if header_duplicates:
+            f.write(f"*Обнаружено повторяющихся заголовков: {len(header_duplicates)}*\n")
+        f.write("\n")
         
         dir_groups = defaultdict(list)
-        for entry in toc:
-            dir_path = os.path.dirname(entry["relative_path"])
+        for entry in files:
+            rel_path = entry.get("relative_path", entry.get("file", ""))
+            dir_path = os.path.dirname(rel_path)
             if not dir_path:
                 dir_path = "корень"
             dir_groups[dir_path].append(entry)
         
         f.write("## 📁 Структура документации\n\n")
         for dir_path in sorted(dir_groups.keys()):
-            f.write(f"### {dir_path}\n")
-            for entry in sorted(dir_groups[dir_path], key=lambda x: x["relative_path"]):
-                f.write(f"- [📄 {get_file_title(entry)}]({entry['relative_path']}) `{entry['unique_id']}`\n")
+            f.write(f"### {dir_path}\n\n")
+            for entry in sorted(dir_groups[dir_path], key=lambda x: x.get("relative_path", x.get("file", ""))):
+                rel_path = entry.get("relative_path", entry.get("file", ""))
+                file_title = get_file_title_from_entry(entry)
+                unique_id = entry.get("unique_id", rel_path.replace("/", "-").replace("\\", "-"))
                 
-                size_kb = entry["size"] // 1024
-                f.write(f"  - **Размер**: {size_kb} KB\n")
+                f.write(f"- [📄 {file_title}]({rel_path})")
                 
-                duplicates = find_file_duplicates(entry, duplicate_groups)
-                if duplicates:
-                    f.write(f"  - **Дубликаты**: ⚠️ {duplicates}\n")
+                if unique_id and unique_id != rel_path:
+                    f.write(f" `{unique_id}`")
+                f.write("\n")
+                
+                if "size" in entry:
+                    size_kb = entry["size"] // 1024
+                    f.write(f"  - **Размер**: {size_kb} KB\n")
+                
+                file_annotation = annotations.get(rel_path)
+                if file_annotation:
+                    f.write(f"  - **Примечание**: {file_annotation}\n")
+                
+                headers = entry.get("headers", [])
+                if headers:
+                    f.write("  - **Заголовки**:\n")
+                    for header in headers:
+                        indent = "    " + "  " * (header["level"] - 1)
+                        header_key = f"{rel_path}#{header['id']}"
+                        header_annotation = annotations.get(header_key, "")
+                        title = header["title"].strip()
+                        
+                        if title in header_duplicates and len(header_duplicates[title]) > 1:
+                            f.write(f"{indent}- [{header['title']}]({rel_path}#{header['id']}) ⚠️ **Дубликат**")
+                            if header_annotation:
+                                f.write(f" — *{header_annotation}*")
+                            f.write("\n")
+                            
+                            other_locations = [loc for loc in header_duplicates[title] 
+                                             if loc["link"] != f"{rel_path}#{header['id']}"]
+                            if other_locations:
+                                f.write(f"{indent}  - *Также встречается в:*\n")
+                                for loc in other_locations:
+                                    f.write(f"{indent}    - [{os.path.basename(loc['file'])}]({loc['link']})\n")
+                        else:
+                            f.write(f"{indent}- [{header['title']}]({rel_path}#{header['id']})")
+                            if header_annotation:
+                                f.write(f" — *{header_annotation}*")
+                            f.write("\n")
                 
                 f.write("\n")
         
-        if duplicate_groups:
-            f.write("## 🔍 Обнаруженные дубликаты\n\n")
-            for i, group in enumerate(duplicate_groups, 1):
-                f.write(f"### Группа {i}: \"{group['pattern']}\" ({group['similarity_score']:.0%} сходство)\n")
-                for file_path in group["files"]:
-                    f.write(f"- {file_path}\n")
+        if header_duplicates:
+            f.write("## 🔍 Повторяющиеся заголовки\n\n")
+            f.write("*Заголовки с одинаковыми формулировками в разных документах:*\n\n")
+            
+            for title, locations in sorted(header_duplicates.items()):
+                f.write(f"### \"{title}\"\n")
+                f.write(f"*Встречается в {len(locations)} местах:*\n\n")
+                
+                for loc in locations:
+                    f.write(f"- [{os.path.basename(loc['file'])}]({loc['link']}) (уровень {loc['level']})\n")
                 f.write("\n")
         
-        f.write("## 📊 Статистика\n")
-        f.write(f"- **Всего файлов**: {metadata['total_files']}\n")
-        f.write(f"- **Групп дубликатов**: {len(duplicate_groups)}\n")
-        total_headers = sum(len(entry["headers"]) for entry in toc)
+        f.write("## 📊 Статистика\n\n")
+        f.write(f"- **Всего файлов**: {metadata.get('total_files', len(files))}\n")
+        total_headers = sum(len(entry.get("headers", [])) for entry in files)
         f.write(f"- **Всего заголовков**: {total_headers}\n")
+        if header_duplicates:
+            f.write(f"- **Повторяющихся заголовков**: {len(header_duplicates)}\n")
+        if annotations:
+            f.write(f"- **Аннотированных элементов**: {len(annotations)}\n")
+
+
+def get_file_title_from_entry(entry):
+    """Извлекает заголовок файла из записи TOC"""
+    headers = entry.get("headers", [])
+    if headers:
+        return headers[0]["title"]
+    
+    rel_path = entry.get("relative_path", entry.get("file", ""))
+    return os.path.basename(rel_path)
+
+
+def update_all_from_json(toc_json_path, toc_md_path, annotations=None):
+    """Создает Markdown TOC из существующего JSON файла"""
+    write_toc_from_json(toc_json_path, toc_md_path, annotations)
+    print(f"✅ Markdown TOC created from {toc_json_path} and saved to: {toc_md_path}")
+
+
 
 
 def inject_back_to_toc_links(docs_dir, toc_md_path, toc):
@@ -398,31 +399,27 @@ def update_all(docs_dir, toc_path, toc_md_path=None):
 
 def update_all_comprehensive(docs_dir, toc_path, toc_md_path=None, comprehensive=False, 
                             similarity_threshold=0.8, exclude_patterns=None):
-    """Обновленная функция с поддержкой комплексного сканирования"""
+    """Обновленная функция с поддержкой комплексного сканирования без дубликатов"""
     if comprehensive:
         root_dir = find_project_root()
         toc, header_map, all_documents = build_comprehensive_toc(root_dir, exclude_patterns)
         
-        duplicate_groups = detect_duplicates(all_documents, similarity_threshold)
-        
         metadata = {
             "generated_at": datetime.now().isoformat(),
             "root_directory": str(root_dir),
-            "total_files": len(toc),
-            "duplicate_groups": len(duplicate_groups)
+            "total_files": len(toc)
         }
         
         extended_toc = {
             "metadata": metadata,
-            "files": toc,
-            "duplicate_groups": duplicate_groups
+            "files": toc
         }
         
         with open(toc_path, "w", encoding="utf-8") as f:
             json.dump(extended_toc, f, indent=2, ensure_ascii=False)
         
         if toc_md_path:
-            write_comprehensive_markdown_toc(toc, duplicate_groups, toc_md_path, metadata)
+            write_toc_from_json(toc_path, toc_md_path)
     else:
         toc, header_map = build_toc(docs_dir)
         with open(toc_path, "w", encoding="utf-8") as f:
