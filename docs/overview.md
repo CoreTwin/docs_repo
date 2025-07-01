@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#overview-md)
+
+[Back to TOC](../comprehensive_toc.md#overview-md)
+
 # Архитектура CoreTwin Platform
 
 ## Обзор системы

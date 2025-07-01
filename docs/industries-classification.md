@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#industries-classification-md)
+
+[Back to TOC](../comprehensive_toc.md#industries-classification-md)
+
 # База специальностей и профессий (ISCO-08) с сопоставлением отраслей (ISIC Rev.4)
 
 ## Используемые стандарты и структура классификации

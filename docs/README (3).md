@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#readme--3--md)
+
+[Back to TOC](../comprehensive_toc.md#readme--3--md)
+
 # CoreTwin Platform Frontend
 
 ## Архитектура Frontend

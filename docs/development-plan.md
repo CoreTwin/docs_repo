@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#development-plan-md)
+
+[Back to TOC](../comprehensive_toc.md#development-plan-md)
+
 # Детальный план разработки платформы CoreTwin
 
 *Версия: 1.0*  

@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#technology-stack-md)
+
+[Back to TOC](../comprehensive_toc.md#technology-stack-md)
+
 # Рекомендации по технологиям
 
 ## Бэкенд
