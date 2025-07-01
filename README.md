@@ -15,8 +15,13 @@ pip install -e .
 
 ## 🚀 Использование
 
+Команда для запуска CLI из корня проекта:
 ```bash
-update-docs --docs path/to/docs --toc path/to/toc.json
+update-docs --docs docs --toc toc.json
+```
+или через Python (если вдруг не работает entry point):
+```bash
+python -m update_docs.cli --docs docs --toc toc.json
 ```
 
 - `--docs`: путь к папке с документацией (по умолчанию: `docs`)
