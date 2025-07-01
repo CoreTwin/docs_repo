@@ -366,7 +366,7 @@ def find_exact_header_matches(files):
                 "file": rel_path,
                 "header_id": header["id"],
                 "level": header["level"],
-                "link": f"{rel_path}#{header['id']}"
+                "link": f"docs/{rel_path}#{header['id']}"
             })
     
     duplicates = {title: locations for title, locations in header_matches.items() 
@@ -448,7 +448,7 @@ def write_toc_from_json(toc_json_path, toc_md_path, annotations=None):
                             f.write("\n")
                             
                             other_locations = [loc for loc in header_duplicates[title] 
-                                             if loc["link"] != f"{rel_path}#{header['id']}"]
+                                             if loc["link"] != f"docs/{rel_path}#{header['id']}"]
                             if other_locations:
                                 f.write(f"{indent}  - *Также встречается в:*\n")
                                 for loc in other_locations:
