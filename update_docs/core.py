@@ -765,7 +765,7 @@ def build_content_json(docs_dir, existing_file_ids=None, existing_entries=None):
     
     return content_entries
 
-def write_description_for_agents(content_entries, output_path):
+def write_description_for_agents(content_entries, output_path, docs_dir='docs'):
     """Генерирует Description_for_agents.md на основе Content.json"""
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write("# 📘 Структура документации проекта\n\n")
@@ -790,6 +790,8 @@ def write_description_for_agents(content_entries, output_path):
                 dir_path = "корень"
             dir_groups[dir_path].append(entry)
         
+        output_dir = os.path.dirname(output_path)
+        
         for dir_path in sorted(dir_groups.keys()):
             f.write(f"## 📁 {dir_path}\n\n")
             
@@ -797,7 +799,13 @@ def write_description_for_agents(content_entries, output_path):
                 editable_icon = "✏️" if entry["editable"] else "🔒"
                 author_icon = author_icons.get(entry["author"], "❓")
                 
-                f.write(f"### {editable_icon} {author_icon} [{entry['title']}]({entry['path']})\n")
+                target_file_path = os.path.join(docs_dir, entry["path"])
+                relative_path = os.path.relpath(target_file_path, output_dir).replace("\\", "/")
+                
+                if not os.path.exists(target_file_path):
+                    continue
+                
+                f.write(f"### {editable_icon} {author_icon} [{entry['title']}]({relative_path})\n")
                 f.write(f"**File ID:** `{entry['file_id']}`  \n")
                 f.write(f"**Автор:** {entry['author']} | **Редактируемый:** {'Да' if entry['editable'] else 'Нет'}\n")
                 
@@ -816,10 +824,11 @@ def write_description_for_agents(content_entries, output_path):
                     f.write("**Структура заголовков:**\n")
                     for header in entry["headers"]:
                         indent = "  " * (header["level"] - 1)
-                        f.write(f"{indent}- [{header['title']}]({entry['path']}#{header['id']})")
-                        if header["excerpt"]:
-                            f.write(f" — *{header['excerpt']}*")
-                        f.write("\n")
+                        if os.path.exists(target_file_path):
+                            f.write(f"{indent}- [{header['title']}]({relative_path}#{header['id']})")
+                            if header["excerpt"]:
+                                f.write(f" — *{header['excerpt']}*")
+                            f.write("\n")
                 
                 f.write("\n")
 
@@ -846,7 +855,7 @@ def update_content_system(docs_dir, content_json_path, description_md_path):
         json.dump(content_entries, f, indent=2, ensure_ascii=False)
     
     if description_md_path:
-        write_description_for_agents(content_entries, description_md_path)
+        write_description_for_agents(content_entries, description_md_path, docs_dir)
     
     header_map = {}
     for entry in content_entries:
