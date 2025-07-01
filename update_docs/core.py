@@ -32,8 +32,9 @@ def extract_headers(file_path):
 def build_toc(docs_dir):
     toc = []
     header_map = {}
-    for root, _, files in os.walk(docs_dir):
-        for file in files:
+    for root, dirs, files in os.walk(docs_dir):
+        dirs.sort()
+        for file in sorted(files):
             if file.endswith(".md"):
                 rel_path = os.path.relpath(os.path.join(root, file), docs_dir)
                 headers = extract_headers(os.path.join(docs_dir, rel_path))
@@ -74,8 +75,9 @@ def extract_section(file_path, section_id, level):
 
 def update_includes(docs_dir, header_map):
     errors = []
-    for root, _, files in os.walk(docs_dir):
-        for file in files:
+    for root, dirs, files in os.walk(docs_dir):
+        dirs.sort()
+        for file in sorted(files):
             if file.endswith(".md"):
                 file_path = os.path.join(root, file)
                 rel_path = os.path.relpath(file_path, docs_dir)
