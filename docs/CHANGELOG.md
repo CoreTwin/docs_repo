@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#changelog-md)
+
+[Back to TOC](../comprehensive_toc.md#changelog-md)
+
 # Changelog
 
 Все значимые изменения в проекте CoreTwin Platform будут документированы в этом файле.

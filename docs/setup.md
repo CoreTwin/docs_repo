@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#setup-md)
+
+[Back to TOC](../comprehensive_toc.md#setup-md)
+
 # Настройка окружения разработки
 
 ## Системные требования

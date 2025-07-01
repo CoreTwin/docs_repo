@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#testing-md)
+
+[Back to TOC](../comprehensive_toc.md#testing-md)
+
 # Тестирование CoreTwin Platform
 
 ## Обзор

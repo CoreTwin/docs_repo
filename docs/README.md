@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#readme-md)
+
+[Back to TOC](../comprehensive_toc.md#readme-md)
+
 # CoreTwin Platform
 
 **Цифровой двойник вашего бизнеса — под полным контролем**1
