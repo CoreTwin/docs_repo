@@ -1,9 +1,10 @@
 # update_docs/cli.py
 
 import argparse
+import json
 from pathlib import Path
 
-from update_docs.core import update_all, update_all_comprehensive
+from update_docs.core import update_all, update_all_comprehensive, update_all_from_json
 
 
 def find_project_root() -> Path:
@@ -38,6 +39,14 @@ def main():
         "--exclude", nargs="*", default=[],
         help="Additional patterns to exclude from scanning"
     )
+    parser.add_argument(
+        "--from-json", action="store_true",
+        help="Generate Markdown TOC from existing toc.json file"
+    )
+    parser.add_argument(
+        "--annotations", 
+        help="Path to JSON file with annotations for headers and files"
+    )
     args = parser.parse_args()
 
     root = find_project_root()
@@ -50,7 +59,25 @@ def main():
     toc = resolve(args.toc)
     toc_md = resolve(args.toc_md) if args.toc_md else None
 
-    if args.comprehensive:
+    if args.from_json:
+        if not toc_md:
+            print("❌ Для режима --from-json необходимо указать --toc-md")
+            return
+        
+        annotations = {}
+        if args.annotations:
+            annotations_path = resolve(args.annotations)
+            try:
+                with open(annotations_path, "r", encoding="utf-8") as f:
+                    annotations = json.load(f)
+            except FileNotFoundError:
+                print(f"⚠️ Файл аннотаций не найден: {annotations_path}")
+            except json.JSONDecodeError as e:
+                print(f"❌ Ошибка в JSON файле аннотаций: {e}")
+                return
+        
+        update_all_from_json(str(toc), str(toc_md), annotations)
+    elif args.comprehensive:
         update_all_comprehensive(
             str(docs), 
             str(toc), 
