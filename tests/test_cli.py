@@ -53,7 +53,7 @@ def test_cli_creates_markdown_toc(tmp_path):
     assert result.returncode == 0
     assert toc_md.exists()
     content = toc_md.read_text()
-    assert "[index.md](index.md)" in content
+    assert "[index.md](docs/index.md)" in content
     md_content = (docs / "index.md").read_text().splitlines()[0]
     assert "[Back to TOC]" in md_content
 
