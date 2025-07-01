@@ -28,7 +28,7 @@ def main():
         "--toc-md", help="Path to Markdown TOC file (output)", default=None
     )
     parser.add_argument(
-        "--comprehensive", action="store_true", 
+        "--comprehensive", action="store_true",
         help="Enable comprehensive scanning from project root"
     )
     parser.add_argument(
@@ -44,7 +44,7 @@ def main():
         help="Generate Markdown TOC from existing toc.json file"
     )
     parser.add_argument(
-        "--annotations", 
+        "--annotations",
         help="Path to JSON file with annotations for headers and files"
     )
     args = parser.parse_args()
@@ -63,7 +63,7 @@ def main():
         if not toc_md:
             print("❌ Для режима --from-json необходимо указать --toc-md")
             return
-        
+
         annotations = {}
         if args.annotations:
             annotations_path = resolve(args.annotations)
@@ -75,12 +75,12 @@ def main():
             except json.JSONDecodeError as e:
                 print(f"❌ Ошибка в JSON файле аннотаций: {e}")
                 return
-        
+
         update_all_from_json(str(toc), str(toc_md), annotations)
     elif args.comprehensive:
         update_all_comprehensive(
-            str(docs), 
-            str(toc), 
+            str(docs),
+            str(toc),
             str(toc_md) if toc_md else None,
             comprehensive=True,
             similarity_threshold=args.similarity_threshold,
