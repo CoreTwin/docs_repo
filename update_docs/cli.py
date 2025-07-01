@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
-from update_docs.core import update_all, update_all_comprehensive, update_all_from_json
+from update_docs.core import update_all, update_all_comprehensive, update_all_from_json, update_content_system
 
 
 def find_project_root() -> Path:
@@ -87,7 +87,15 @@ def main():
             exclude_patterns=args.exclude
         )
     else:
-        update_all(str(docs), str(toc), str(toc_md) if toc_md else None)
+        if (str(toc).endswith('Content.json') or 
+            (toc_md and str(toc_md).endswith('Description_for_agents.md'))):
+            try:
+                update_content_system(str(docs), str(toc), str(toc_md) if toc_md else None)
+            except Exception as e:
+                print(f"❌ Ошибка при обновлении Content.json системы: {e}")
+                return
+        else:
+            update_all(str(docs), str(toc), str(toc_md) if toc_md else None)
 
 if __name__ == "__main__":
     main()
