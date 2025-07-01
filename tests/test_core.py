@@ -68,7 +68,7 @@ def test_write_markdown_toc(tmp_path):
     path = tmp_path / "toc.md"
     write_markdown_toc(toc, path)
     content = path.read_text()
-    assert "[index.md](index.md)" in content
+    assert "[index.md](docs/index.md)" in content
     assert '<a id="index-md"></a>' in content
 
 

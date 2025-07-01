@@ -3,6 +3,7 @@
 import argparse
 import json
 from pathlib import Path
+
 from update_docs.core import update_all, update_all_comprehensive, update_all_from_json
 
 
