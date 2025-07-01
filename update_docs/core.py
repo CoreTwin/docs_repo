@@ -3,6 +3,8 @@
 import os
 import re
 import json
+import hashlib
+import subprocess
 from pathlib import Path
 import difflib
 from collections import defaultdict
@@ -41,15 +43,41 @@ def extract_headers(file_path):
     with open(file_path, encoding="utf-8") as f:
         content = f.read()
     headers = []
+    lines = content.splitlines()
+    parent_stack = []
+    
     for match in HEADER_RE.finditer(content):
         level = len(match.group(1))
         title = match.group(2).strip()
         id_tag = match.group(3) or slugify(title)
-        headers.append({
+        
+        start_line = content[:match.start()].count('\n')
+        excerpt = ""
+        for j in range(start_line + 1, min(start_line + 5, len(lines))):
+            if j < len(lines) and not lines[j].strip().startswith('#'):
+                excerpt += lines[j].strip() + " "
+                if len(excerpt) > 100:
+                    break
+        excerpt = excerpt[:100].strip()
+        if len(excerpt) == 100:
+            excerpt += "..."
+        
+        while parent_stack and parent_stack[-1]['level'] >= level:
+            parent_stack.pop()
+        
+        parent_id = parent_stack[-1]['id'] if parent_stack else None
+        
+        header_obj = {
+            "id": id_tag,
             "level": level,
             "title": title,
-            "id": id_tag
-        })
+            "excerpt": excerpt,
+            "parent_id": parent_id
+        }
+        
+        headers.append(header_obj)
+        parent_stack.append(header_obj)
+    
     return headers
 
 def build_toc(docs_dir):
@@ -235,6 +263,189 @@ def find_project_root():
             break
         path = path.parent
     return path
+
+def get_git_file_authors(file_path, repo_root=None):
+    """Извлекает информацию об авторах файла из git истории"""
+    if repo_root is None:
+        repo_root = find_project_root()
+    
+    try:
+        result = subprocess.run([
+            'git', 'log', '-1', '--pretty=format:%an|%ae|%at', '--', file_path
+        ], cwd=repo_root, capture_output=True, text=True, timeout=10)
+        
+        if result.returncode != 0:
+            return None
+        
+        if not result.stdout.strip():
+            return None
+            
+        author_name, author_email, timestamp = result.stdout.strip().split('|')
+        
+        all_authors_result = subprocess.run([
+            'git', 'log', '--pretty=format:%an|%ae', '--', file_path
+        ], cwd=repo_root, capture_output=True, text=True, timeout=15)
+        
+        all_authors = []
+        if all_authors_result.returncode == 0:
+            for line in all_authors_result.stdout.strip().split('\n'):
+                if line.strip():
+                    name, email = line.split('|')
+                    if (name, email) not in all_authors:
+                        all_authors.append((name, email))
+        
+        return {
+            'last_author_name': author_name,
+            'last_author_email': author_email,
+            'last_modified_timestamp': int(timestamp),
+            'all_authors': all_authors
+        }
+        
+    except (subprocess.TimeoutExpired, subprocess.CalledProcessError, ValueError):
+        return None
+
+def classify_author_from_git(git_info):
+    """Классифицирует автора на основе git информации"""
+    if not git_info:
+        return "human"
+    
+    email = git_info['last_author_email'].lower()
+    name = git_info['last_author_name'].lower()
+    
+    ai_patterns = [
+        r'.*ai.*@.*',
+        r'.*bot.*@.*', 
+        r'.*gpt.*@.*',
+        r'.*claude.*@.*',
+        r'.*assistant.*@.*',
+        r'.*devin.*@.*',
+        r'.*copilot.*@.*',
+        r'noreply@.*',
+        r'.*automated.*@.*'
+    ]
+    
+    generator_patterns = [
+        r'.*generator.*@.*',
+        r'.*auto.*@.*',
+        r'.*system.*@.*',
+        r'.*build.*@.*',
+        r'.*ci.*@.*',
+        r'.*deploy.*@.*'
+    ]
+    
+    for pattern in ai_patterns:
+        if re.match(pattern, email):
+            return "ai"
+    
+    for pattern in generator_patterns:
+        if re.match(pattern, email):
+            return "generator"
+    
+    ai_name_patterns = ['ai', 'bot', 'gpt', 'claude', 'assistant', 'devin', 'copilot']
+    generator_name_patterns = ['generator', 'auto', 'system', 'build', 'ci', 'deploy']
+    
+    for pattern in ai_name_patterns:
+        if pattern in name:
+            return "ai"
+            
+    for pattern in generator_name_patterns:
+        if pattern in name:
+            return "generator"
+    
+    return "human"
+
+def detect_author_type_enhanced(file_path, content, git_info=None):
+    """Расширенное определение типа автора с приоритетной системой"""
+    
+    auto_patterns = [
+        r'<!-- AUTO-GENERATED -->',
+        r'# AUTO-GENERATED',
+        r'This file was automatically generated',
+        r'Generated by update-docs',
+        r'Автоматически сгенерировано'
+    ]
+    
+    for pattern in auto_patterns:
+        if re.search(pattern, content, re.IGNORECASE):
+            return "generator", "comment_marker"
+    
+    ai_patterns = [
+        r'<!-- AI-GENERATED -->',
+        r'Generated by AI',
+        r'Created by.*AI',
+        r'ChatGPT|Claude|GPT-|Devin',
+        r'Создано ИИ|Генерировано ИИ'
+    ]
+    
+    for pattern in ai_patterns:
+        if re.search(pattern, content, re.IGNORECASE):
+            return "ai", "comment_marker"
+    
+    if git_info:
+        git_classification = classify_author_from_git(git_info)
+        if git_classification != "human":
+            return git_classification, "git_history"
+        
+        all_authors = git_info.get('all_authors', [])
+        if len(all_authors) > 1:
+            author_types = set()
+            for name, email in all_authors:
+                temp_git_info = {'last_author_email': email, 'last_author_name': name}
+                author_type = classify_author_from_git(temp_git_info)
+                author_types.add(author_type)
+            
+            if len(author_types) > 1:
+                return "mixed", "git_history"
+    
+    return "human", "default"
+
+def determine_editability(author_type, author_source):
+    """Определяет возможность редактирования файла"""
+    if author_type in ["generator"]:
+        return False
+    elif author_type == "mixed":
+        return True
+    else:
+        return True
+
+def generate_persistent_file_id(file_path, content=None):
+    """Генерирует persistent file_id на основе содержимого файла"""
+    if content is None:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+    
+    content_sample = content[:200].strip()
+    content_hash = hashlib.md5(content_sample.encode()).hexdigest()[:8]
+    
+    base_name = os.path.splitext(os.path.basename(file_path))[0]
+    return f"{slugify(base_name)}-{content_hash}"
+
+def load_existing_file_ids(content_json_path):
+    """Загружает существующие file_id из Content.json для сохранения при переименовании"""
+    if not os.path.exists(content_json_path):
+        return {}
+    
+    try:
+        with open(content_json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        if isinstance(data, list):
+            return {entry.get('path', entry.get('file', '')): entry.get('file_id', '') 
+                   for entry in data if entry.get('file_id')}
+        else:
+            return {}
+    except (json.JSONDecodeError, KeyError):
+        return {}
+
+def match_file_by_content(file_path, content, existing_entries):
+    """Находит существующий file_id по содержимому при переименовании файла"""
+    current_hash = hashlib.md5(content[:200].encode()).hexdigest()[:8]
+    
+    for entry in existing_entries:
+        if entry.get('file_id', '').endswith(f"-{current_hash}"):
+            return entry['file_id']
+    
+    return None
 
 
 def write_toc_from_json(toc_json_path, toc_md_path, annotations=None):
@@ -492,6 +703,175 @@ def get_file_title_from_entry(entry):
     rel_path = entry.get("relative_path", entry.get("file", ""))
     return os.path.basename(rel_path)
 
+
+def build_content_json(docs_dir, existing_file_ids=None, existing_entries=None):
+    """Создает Content.json согласно спецификации с git интеграцией"""
+    if existing_file_ids is None:
+        existing_file_ids = {}
+    if existing_entries is None:
+        existing_entries = []
+    
+    content_entries = []
+    repo_root = find_project_root()
+    
+    for root, dirs, files in os.walk(docs_dir):
+        dirs[:] = [d for d in dirs if d != 'content']
+        dirs.sort()
+        
+        for file in sorted(files):
+            if file.endswith(".md"):
+                file_path = os.path.join(root, file)
+                rel_path = os.path.relpath(file_path, docs_dir).replace("\\", "/")
+                
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                git_info = get_git_file_authors(rel_path, repo_root)
+                
+                if rel_path in existing_file_ids:
+                    file_id = existing_file_ids[rel_path]
+                else:
+                    matched_id = match_file_by_content(file_path, content, existing_entries)
+                    if matched_id:
+                        file_id = matched_id
+                    else:
+                        file_id = generate_persistent_file_id(file_path, content)
+                
+                author_type, author_source = detect_author_type_enhanced(file_path, content, git_info)
+                editable = determine_editability(author_type, author_source)
+                
+                headers = extract_headers(file_path)
+                
+                title = headers[0]["title"] if headers else os.path.splitext(file)[0]
+                
+                entry = {
+                    "file_id": file_id,
+                    "title": title,
+                    "path": rel_path,
+                    "editable": editable,
+                    "author": author_type,
+                    "headers": headers
+                }
+                
+                if git_info:
+                    entry["git_info"] = {
+                        "last_author": f"{git_info['last_author_name']} <{git_info['last_author_email']}>",
+                        "last_modified": git_info['last_modified_timestamp'],
+                        "all_authors": [f"{name} <{email}>" for name, email in git_info['all_authors']],
+                        "author_source": author_source
+                    }
+                
+                content_entries.append(entry)
+    
+    return content_entries
+
+def write_description_for_agents(content_entries, output_path):
+    """Генерирует Description_for_agents.md на основе Content.json"""
+    with open(output_path, 'w', encoding='utf-8') as f:
+        f.write("# 📘 Структура документации проекта\n\n")
+        f.write("*Автоматически сгенерировано системой update-docs*\n\n")
+        f.write("<!-- AUTO-GENERATED -->\n\n")
+        
+        author_stats = defaultdict(int)
+        for entry in content_entries:
+            author_stats[entry["author"]] += 1
+        
+        f.write("## 📊 Статистика авторства\n\n")
+        author_icons = {"human": "👤", "ai": "🤖", "generator": "⚙️", "mixed": "🔄"}
+        for author_type, count in sorted(author_stats.items()):
+            icon = author_icons.get(author_type, "❓")
+            f.write(f"- {icon} **{author_type}**: {count} файлов\n")
+        f.write("\n")
+        
+        dir_groups = defaultdict(list)
+        for entry in content_entries:
+            dir_path = os.path.dirname(entry["path"])
+            if not dir_path:
+                dir_path = "корень"
+            dir_groups[dir_path].append(entry)
+        
+        for dir_path in sorted(dir_groups.keys()):
+            f.write(f"## 📁 {dir_path}\n\n")
+            
+            for entry in sorted(dir_groups[dir_path], key=lambda x: x["title"]):
+                editable_icon = "✏️" if entry["editable"] else "🔒"
+                author_icon = author_icons.get(entry["author"], "❓")
+                
+                f.write(f"### {editable_icon} {author_icon} [{entry['title']}]({entry['path']})\n")
+                f.write(f"**File ID:** `{entry['file_id']}`  \n")
+                f.write(f"**Автор:** {entry['author']} | **Редактируемый:** {'Да' if entry['editable'] else 'Нет'}\n")
+                
+                if "git_info" in entry:
+                    git_info = entry["git_info"]
+                    f.write(f"**Последний автор:** {git_info['last_author']}  \n")
+                    if len(git_info['all_authors']) > 1:
+                        f.write(f"**Все авторы:** {', '.join(git_info['all_authors'][:3])}")
+                        if len(git_info['all_authors']) > 3:
+                            f.write(f" и еще {len(git_info['all_authors']) - 3}")
+                        f.write("  \n")
+                
+                f.write("\n")
+                
+                if entry["headers"]:
+                    f.write("**Структура заголовков:**\n")
+                    for header in entry["headers"]:
+                        indent = "  " * (header["level"] - 1)
+                        f.write(f"{indent}- [{header['title']}]({entry['path']}#{header['id']})")
+                        if header["excerpt"]:
+                            f.write(f" — *{header['excerpt']}*")
+                        f.write("\n")
+                
+                f.write("\n")
+
+def update_content_system(docs_dir, content_json_path, description_md_path):
+    """Главная функция для обновления системы Content.json и Description_for_agents.md"""
+    
+    content_dir = os.path.dirname(content_json_path)
+    os.makedirs(content_dir, exist_ok=True)
+    
+    existing_file_ids = load_existing_file_ids(content_json_path)
+    existing_entries = []
+    if os.path.exists(content_json_path):
+        try:
+            with open(content_json_path, 'r', encoding='utf-8') as f:
+                existing_entries = json.load(f)
+            if not isinstance(existing_entries, list):
+                existing_entries = []
+        except (json.JSONDecodeError, FileNotFoundError):
+            existing_entries = []
+    
+    content_entries = build_content_json(docs_dir, existing_file_ids, existing_entries)
+    
+    with open(content_json_path, 'w', encoding='utf-8') as f:
+        json.dump(content_entries, f, indent=2, ensure_ascii=False)
+    
+    if description_md_path:
+        write_description_for_agents(content_entries, description_md_path)
+    
+    header_map = {}
+    for entry in content_entries:
+        for header in entry["headers"]:
+            key = (entry["path"], header["id"])
+            header_map[key] = {
+                "title": header["title"],
+                "level": header["level"],
+                "file": entry["path"]
+            }
+    
+    include_errors = update_includes(docs_dir, header_map)
+    
+    print(f"✅ Content.json создан: {content_json_path}")
+    if description_md_path:
+        print(f"✅ Description_for_agents.md создан: {description_md_path}")
+    
+    if include_errors:
+        print("⚠️ Обнаружены ошибки include:")
+        for error in include_errors:
+            print(f"  {error}")
+    else:
+        print("✅ Все include блоки валидны")
+    
+    return include_errors
 
 def update_all_from_json(toc_json_path, toc_md_path, annotations=None):
     """Создает Markdown TOC из существующего JSON файла"""
