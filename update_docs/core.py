@@ -5,7 +5,10 @@ import re
 import json
 from collections import defaultdict
 
-HEADER_RE = re.compile(r"^(#{1,3})\s+(.*?)\s*(?:<!--\s*id:([\w\-]+)\s*-->)?\s*$", re.MULTILINE)
+HEADER_RE = re.compile(
+    r"^(#{1,6})\s+(.*?)\s*(?:<!--\s*id:([\w\-]+)\s*-->)?\s*$",
+    re.MULTILINE,
+)
 INCLUDE_RE = re.compile(r"<!--\s*include:([^\s#]+)#([\w\-]+)\s*-->")
 
 def slugify(text):
