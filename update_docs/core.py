@@ -216,8 +216,29 @@ def find_project_root():
     return path
 
 
+def find_exact_header_matches(files):
+    """Находит точные совпадения заголовков между файлами"""
+    header_matches = defaultdict(list)
+    
+    for entry in files:
+        for header in entry.get("headers", []):
+            title = header["title"].strip()
+            rel_path = entry.get("relative_path", entry.get("file", ""))
+            header_matches[title].append({
+                "file": rel_path,
+                "header_id": header["id"],
+                "level": header["level"],
+                "link": f"{rel_path}#{header['id']}"
+            })
+    
+    duplicates = {title: locations for title, locations in header_matches.items() 
+                 if len(locations) > 1}
+    
+    return duplicates
+
+
 def write_toc_from_json(toc_json_path, toc_md_path, annotations=None):
-    """Создает Markdown оглавление из существующего toc.json файла с возможностью добавления аннотаций"""
+    """Создает Markdown оглавление из существующего toc.json файла с перекрестными ссылками"""
     if annotations is None:
         annotations = {}
     
@@ -231,12 +252,17 @@ def write_toc_from_json(toc_json_path, toc_md_path, annotations=None):
         files = data
         metadata = {"total_files": len(files)}
     
+    header_duplicates = find_exact_header_matches(files)
+    
     with open(toc_md_path, "w", encoding="utf-8") as f:
         f.write("# Оглавление проекта\n\n")
         
         if metadata.get("generated_at"):
             f.write(f"*Сгенерировано: {metadata['generated_at']}*  \n")
-        f.write(f"*Всего файлов: {metadata.get('total_files', len(files))}*\n\n")
+        f.write(f"*Всего файлов: {metadata.get('total_files', len(files))}*\n")
+        if header_duplicates:
+            f.write(f"*Обнаружено повторяющихся заголовков: {len(header_duplicates)}*\n")
+        f.write("\n")
         
         dir_groups = defaultdict(list)
         for entry in files:
@@ -275,18 +301,46 @@ def write_toc_from_json(toc_json_path, toc_md_path, annotations=None):
                         indent = "    " + "  " * (header["level"] - 1)
                         header_key = f"{rel_path}#{header['id']}"
                         header_annotation = annotations.get(header_key, "")
+                        title = header["title"].strip()
                         
-                        f.write(f"{indent}- [{header['title']}]({rel_path}#{header['id']})")
-                        if header_annotation:
-                            f.write(f" — *{header_annotation}*")
-                        f.write("\n")
+                        if title in header_duplicates and len(header_duplicates[title]) > 1:
+                            f.write(f"{indent}- [{header['title']}]({rel_path}#{header['id']}) ⚠️ **Дубликат**")
+                            if header_annotation:
+                                f.write(f" — *{header_annotation}*")
+                            f.write("\n")
+                            
+                            other_locations = [loc for loc in header_duplicates[title] 
+                                             if loc["link"] != f"{rel_path}#{header['id']}"]
+                            if other_locations:
+                                f.write(f"{indent}  - *Также встречается в:*\n")
+                                for loc in other_locations:
+                                    f.write(f"{indent}    - [{os.path.basename(loc['file'])}]({loc['link']})\n")
+                        else:
+                            f.write(f"{indent}- [{header['title']}]({rel_path}#{header['id']})")
+                            if header_annotation:
+                                f.write(f" — *{header_annotation}*")
+                            f.write("\n")
                 
+                f.write("\n")
+        
+        if header_duplicates:
+            f.write("## 🔍 Повторяющиеся заголовки\n\n")
+            f.write("*Заголовки с одинаковыми формулировками в разных документах:*\n\n")
+            
+            for title, locations in sorted(header_duplicates.items()):
+                f.write(f"### \"{title}\"\n")
+                f.write(f"*Встречается в {len(locations)} местах:*\n\n")
+                
+                for loc in locations:
+                    f.write(f"- [{os.path.basename(loc['file'])}]({loc['link']}) (уровень {loc['level']})\n")
                 f.write("\n")
         
         f.write("## 📊 Статистика\n\n")
         f.write(f"- **Всего файлов**: {metadata.get('total_files', len(files))}\n")
         total_headers = sum(len(entry.get("headers", [])) for entry in files)
         f.write(f"- **Всего заголовков**: {total_headers}\n")
+        if header_duplicates:
+            f.write(f"- **Повторяющихся заголовков**: {len(header_duplicates)}\n")
         if annotations:
             f.write(f"- **Аннотированных элементов**: {len(annotations)}\n")
 
