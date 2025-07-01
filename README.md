@@ -26,6 +26,8 @@ python -m update_docs.cli --docs docs --toc toc.json
 
 - `--docs`: путь к папке с документацией (по умолчанию: `docs`)
 - `--toc`: путь к JSON-файлу оглавления (по умолчанию: `toc.json`)
+- `--toc-md`: путь к Markdown-версии TOC. Если указан, файл будет создан, а в
+  каждую страницу будет добавлена ссылка "Back to TOC".
 
 ## 🔁 Интеграция с Git pre-commit hook
 
@@ -34,7 +36,7 @@ python -m update_docs.cli --docs docs --toc toc.json
 ```bash
 #!/bin/bash
 echo "🛠 Запуск update-docs перед коммитом..."
-update-docs --docs docs --toc toc.json
+update-docs --docs docs --toc toc.json --toc-md toc.md
 ```
 
 Сделайте его исполняемым:

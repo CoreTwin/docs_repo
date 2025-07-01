@@ -3,7 +3,6 @@
 import os
 import re
 import json
-from collections import defaultdict
 
 HEADER_RE = re.compile(
     r"^(#{1,6})\s+(.*?)\s*(?:<!--\s*id:([\w\-]+)\s*-->)?\s*$",
@@ -116,11 +115,43 @@ def update_includes(docs_dir, header_map):
                         f.write(updated)
     return errors
 
-def update_all(docs_dir, toc_path):
+
+def write_markdown_toc(toc, toc_md_path):
+    with open(toc_md_path, "w", encoding="utf-8") as f:
+        f.write("# Table of Contents\n\n")
+        for entry in toc:
+            file_path = entry["file"]
+            anchor = slugify(file_path.replace("/", "-"))
+            f.write(f'- <a id="{anchor}"></a>[{file_path}]({file_path})\n')
+
+
+def inject_back_to_toc_links(docs_dir, toc_md_path, toc):
+    abs_toc = os.path.abspath(toc_md_path)
+    for entry in toc:
+        rel_file = entry["file"]
+        file_path = os.path.join(docs_dir, rel_file)
+        if os.path.abspath(file_path) == abs_toc:
+            continue
+        with open(file_path, encoding="utf-8") as f:
+            content = f.read()
+        anchor = slugify(rel_file.replace("/", "-"))
+        relative = os.path.relpath(toc_md_path, os.path.dirname(file_path)).replace("\\", "/")
+        link = f"[Back to TOC]({relative}#{anchor})"
+        if link in content:
+            continue
+        updated = f"{link}\n\n{content}"
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(updated)
+
+def update_all(docs_dir, toc_path, toc_md_path=None):
     toc, header_map = build_toc(docs_dir)
     with open(toc_path, "w", encoding="utf-8") as f:
         json.dump(toc, f, indent=2, ensure_ascii=False)
+    if toc_md_path:
+        write_markdown_toc(toc, toc_md_path)
     errors = update_includes(docs_dir, header_map)
+    if toc_md_path:
+        inject_back_to_toc_links(docs_dir, toc_md_path, toc)
     print(f"✅ TOC updated and saved to: {toc_path}")
     if errors:
         print("\n".join(errors))
