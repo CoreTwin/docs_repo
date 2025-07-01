@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#security-md)
+
+[Back to TOC](../comprehensive_toc.md#security-md)
+
 # Security Architecture
 
 ## Overview

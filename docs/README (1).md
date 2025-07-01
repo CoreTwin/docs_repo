@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#readme--1--md)
+
+[Back to TOC](../comprehensive_toc.md#readme--1--md)
+
 # Shared Components
 
 Общие компоненты, типы и утилиты, используемые как в backend, так и в frontend частях платформы CoreTwin.

@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#job-directory-md)
+
+[Back to TOC](../comprehensive_toc.md#job-directory-md)
+
 # Глобальный справочник должностей CoreTwin Platform
 
 ## Обзор справочника

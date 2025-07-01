@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#index-md)
+
+[Back to TOC](../comprehensive_toc.md#index-md)
+
 # CoreTwin Platform
 
 **Цифровой двойник вашего бизнеса — под полным контролем**

@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#readme--4--md)
+
+[Back to TOC](../comprehensive_toc.md#readme--4--md)
+
 # Тестирование CoreTwin Platform
 
 ## Конфигурация PostgreSQL для тестов

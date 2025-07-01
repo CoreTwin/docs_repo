@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#technical-specification-md)
+
+[Back to TOC](../comprehensive_toc.md#technical-specification-md)
+
 # Техническое задание платформы CoreTwin
 
 ## 1. Миссия и ценности платформы

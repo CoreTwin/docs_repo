@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#readme--2--md)
+
+[Back to TOC](../comprehensive_toc.md#readme--2--md)
+
 # CoreTwin Platform Backend
 
 ## Архитектура Backend

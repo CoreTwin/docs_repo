@@ -3,7 +3,7 @@
 import argparse
 from pathlib import Path
 
-from update_docs.core import update_all
+from update_docs.core import update_all, update_all_comprehensive
 
 
 def find_project_root() -> Path:
@@ -26,6 +26,18 @@ def main():
     parser.add_argument(
         "--toc-md", help="Path to Markdown TOC file (output)", default=None
     )
+    parser.add_argument(
+        "--comprehensive", action="store_true", 
+        help="Enable comprehensive scanning from project root"
+    )
+    parser.add_argument(
+        "--similarity-threshold", type=float, default=0.8,
+        help="Similarity threshold for duplicate detection (0.0-1.0)"
+    )
+    parser.add_argument(
+        "--exclude", nargs="*", default=[],
+        help="Additional patterns to exclude from scanning"
+    )
     args = parser.parse_args()
 
     root = find_project_root()
@@ -38,7 +50,17 @@ def main():
     toc = resolve(args.toc)
     toc_md = resolve(args.toc_md) if args.toc_md else None
 
-    update_all(str(docs), str(toc), str(toc_md) if toc_md else None)
+    if args.comprehensive:
+        update_all_comprehensive(
+            str(docs), 
+            str(toc), 
+            str(toc_md) if toc_md else None,
+            comprehensive=True,
+            similarity_threshold=args.similarity_threshold,
+            exclude_patterns=args.exclude
+        )
+    else:
+        update_all(str(docs), str(toc), str(toc_md) if toc_md else None)
 
 if __name__ == "__main__":
     main()
