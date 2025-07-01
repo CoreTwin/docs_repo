@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#mcp-integration-md)
+
+[Back to TOC](../comprehensive_toc.md#mcp-integration-md)
+
 # Применение Model Context Protocol (MCP) в платформе CoreTwin
 
 ## Введение

@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#companies-md)
+
+[Back to TOC](../comprehensive_toc.md#companies-md)
+
 # Companies API
 
 ## Overview

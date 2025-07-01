@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#service-design-md)
+
+[Back to TOC](../comprehensive_toc.md#service-design-md)
+
 # Логика модульной архитектуры на базе должностей и обязанностей
 
 ## 🔹 Цель

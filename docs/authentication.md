@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#authentication-md)
+
+[Back to TOC](../comprehensive_toc.md#authentication-md)
+
 # Authentication API
 
 ## Overview

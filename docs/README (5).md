@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#readme--5--md)
+
+[Back to TOC](../comprehensive_toc.md#readme--5--md)
+
 # Разработка CoreTwin Platform
 
 ## Обзор процесса разработки

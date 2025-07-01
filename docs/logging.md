@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#logging-md)
+
+[Back to TOC](../comprehensive_toc.md#logging-md)
+
 # Система логирования CoreTwin Platform
 
 ## Обзор

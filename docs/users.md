@@ -1,3 +1,7 @@
+[Back to TOC](../basic_toc.md#users-md)
+
+[Back to TOC](../comprehensive_toc.md#users-md)
+
 # Users API
 
 ## Overview
