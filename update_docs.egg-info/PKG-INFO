@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: update-docs
+Version: 0.1
+Summary: CLI tool for maintaining Markdown documentation structure and include references.
+Author: CoreTwin System
+Requires-Python: >=3.7
+License-File: LICENSE
+Dynamic: author
+Dynamic: license-file
+Dynamic: requires-python
+Dynamic: summary
