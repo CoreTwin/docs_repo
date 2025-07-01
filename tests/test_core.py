@@ -4,6 +4,8 @@ from update_docs.core import (
     build_toc,
     extract_section,
     update_includes,
+    write_markdown_toc,
+    inject_back_to_toc_links,
 )
 
 
@@ -59,4 +61,25 @@ def test_update_includes(tmp_path):
     content = target.read_text()
     assert "<!-- BEGIN include:src.md#part -->" in content
     assert "content" in content
+
+
+def test_write_markdown_toc(tmp_path):
+    toc = [{"file": "index.md", "headers": []}]
+    path = tmp_path / "toc.md"
+    write_markdown_toc(toc, path)
+    content = path.read_text()
+    assert "[index.md](index.md)" in content
+    assert '<a id="index-md"></a>' in content
+
+
+def test_inject_back_to_toc_links(tmp_path):
+    docs = tmp_path
+    md = docs / "index.md"
+    md.write_text("# Title\n")
+    toc_md = tmp_path / "toc.md"
+    toc_md.write_text("toc")
+    toc = [{"file": "index.md", "headers": []}]
+    inject_back_to_toc_links(docs, toc_md, toc)
+    content = md.read_text().splitlines()[0]
+    assert "[Back to TOC]" in content
 

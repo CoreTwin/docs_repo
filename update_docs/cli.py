@@ -11,8 +11,11 @@ def main():
     parser.add_argument(
         "--toc", default="toc.json", help="Path to TOC file (output)"
     )
+    parser.add_argument(
+        "--toc-md", help="Path to Markdown TOC file (output)", default=None
+    )
     args = parser.parse_args()
-    update_all(args.docs, args.toc)
+    update_all(args.docs, args.toc, args.toc_md)
 
 if __name__ == "__main__":
     main()
