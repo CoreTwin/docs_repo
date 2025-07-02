@@ -1,6 +1,4 @@
-[Back to TOC](../basic_toc.md#technology-stack-md)
-
-[Back to TOC](../comprehensive_toc.md#technology-stack-md)
+[Домой](../README.md) | [Назад](../content/Description_for_agents.md)
 
 # Рекомендации по технологиям
 

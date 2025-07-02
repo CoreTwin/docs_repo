@@ -1,6 +1,4 @@
-[Back to TOC](../basic_toc.md#security-md)
-
-[Back to TOC](../comprehensive_toc.md#security-md)
+[Домой](../README.md) | [Назад](../content/Description_for_agents.md)
 
 # Security Architecture
 

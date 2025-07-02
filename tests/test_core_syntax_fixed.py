@@ -166,9 +166,12 @@ def test_inject_back_to_toc_links(tmp_path):
     docs = tmp_path
     md = docs / "index.md"
     md.write_text("# Title\n")
-    toc_md = tmp_path / "toc.md"
-    toc_md.write_text("toc")
-    toc = [{"file": "index.md", "headers": []}]
-    inject_back_to_toc_links(docs, toc_md, toc)
+    readme = tmp_path / "README.md"
+    readme.write_text("# Main README\n")
+    description_md = tmp_path / "Description_for_agents.md"
+    description_md.write_text("# Description for agents\n")
+    content_entries = [{"path": "index.md", "headers": []}]
+    inject_back_to_toc_links(docs, description_md, content_entries, readme)
     content = md.read_text().splitlines()[0]
-    assert "[Back to TOC]" in content
+    assert "Домой" in content
+    assert "Назад" in content
