@@ -1,6 +1,4 @@
-[Back to TOC](../basic_toc.md#readme--2--md)
-
-[Back to TOC](../comprehensive_toc.md#readme--2--md)
+[Домой](../README.md) | [Назад](../content/Description_for_agents.md)
 
 # CoreTwin Platform Backend
 
