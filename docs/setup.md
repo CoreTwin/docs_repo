@@ -1,6 +1,4 @@
-[Back to TOC](../basic_toc.md#setup-md)
-
-[Back to TOC](../comprehensive_toc.md#setup-md)
+[Домой](../README.md) | [Назад](../content/Description_for_agents.md)
 
 # Настройка окружения разработки
 

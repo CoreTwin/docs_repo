@@ -1,6 +1,4 @@
-[Back to TOC](../basic_toc.md#overview-md)
-
-[Back to TOC](../comprehensive_toc.md#overview-md)
+[Домой](../README.md) | [Назад](../content/Description_for_agents.md)
 
 # Архитектура CoreTwin Platform
 

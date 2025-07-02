@@ -1,6 +1,4 @@
-[Back to TOC](../basic_toc.md#service-design-md)
-
-[Back to TOC](../comprehensive_toc.md#service-design-md)
+[Домой](../README.md) | [Назад](../content/Description_for_agents.md)
 
 # Логика модульной архитектуры на базе должностей и обязанностей
 
