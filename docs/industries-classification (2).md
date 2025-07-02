@@ -1,6 +1,4 @@
-[Back to TOC](../basic_toc.md#industries-classification--2--md)
-
-[Back to TOC](../comprehensive_toc.md#industries-classification--2--md)
+[Домой](../README.md) | [Назад](../content/Description_for_agents.md)
 
 # База специальностей и профессий (ISCO-08) с сопоставлением отраслей (ISIC Rev.4)
 

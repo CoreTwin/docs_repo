@@ -1,6 +1,4 @@
-[Back to TOC](../basic_toc.md#development-plan-md)
-
-[Back to TOC](../comprehensive_toc.md#development-plan-md)
+[Домой](../README.md) | [Назад](../content/Description_for_agents.md)
 
 # Детальный план разработки платформы CoreTwin
 
