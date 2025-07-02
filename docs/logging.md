@@ -1,6 +1,4 @@
-[Back to TOC](../basic_toc.md#logging-md)
-
-[Back to TOC](../comprehensive_toc.md#logging-md)
+[Домой](../README.md) | [Назад](../content/Description_for_agents.md)
 
 # Система логирования CoreTwin Platform
 

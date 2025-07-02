@@ -1,6 +1,4 @@
-[Back to TOC](../basic_toc.md#technical-specification-md)
-
-[Back to TOC](../comprehensive_toc.md#technical-specification-md)
+[Домой](../README.md) | [Назад](../content/Description_for_agents.md)
 
 # Техническое задание платформы CoreTwin
 

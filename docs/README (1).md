@@ -1,6 +1,4 @@
-[Back to TOC](../basic_toc.md#readme--1--md)
-
-[Back to TOC](../comprehensive_toc.md#readme--1--md)
+[Домой](../README.md) | [Назад](../content/Description_for_agents.md)
 
 # Shared Components
 
