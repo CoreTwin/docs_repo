@@ -869,9 +869,14 @@ def update_content_system(docs_dir, content_json_path, description_md_path):
     
     include_errors = update_includes(docs_dir, header_map)
     
+    clean_broken_back_links(docs_dir)
+    if description_md_path:
+        inject_back_to_toc_links_russian(docs_dir, description_md_path, content_entries)
+    
     print(f"✅ Content.json создан: {content_json_path}")
     if description_md_path:
         print(f"✅ Description_for_agents.md создан: {description_md_path}")
+        print("✅ Навигационные ссылки обновлены")
     
     if include_errors:
         print("⚠️ Обнаружены ошибки include:")
@@ -888,6 +893,67 @@ def update_all_from_json(toc_json_path, toc_md_path, annotations=None):
     print(f"✅ Markdown TOC created from {toc_json_path} and saved to: {toc_md_path}")
 
 
+def clean_broken_back_links(docs_dir):
+    """Удаляет существующие битые ссылки 'Back to TOC' из всех файлов документации"""
+    for root, dirs, files in os.walk(docs_dir):
+        for file in files:
+            if file.endswith(".md"):
+                file_path = os.path.join(root, file)
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                lines = content.split('\n')
+                cleaned_lines = []
+                skip_next_empty = False
+                
+                for line in lines:
+                    if ('Back to TOC' in line and 
+                        ('basic_toc.md' in line or 'comprehensive_toc.md' in line)):
+                        skip_next_empty = True
+                        continue
+                    elif skip_next_empty and line.strip() == '':
+                        skip_next_empty = False
+                        continue
+                    else:
+                        cleaned_lines.append(line)
+                        skip_next_empty = False
+                
+                cleaned_content = '\n'.join(cleaned_lines)
+                if cleaned_content != content:
+                    with open(file_path, 'w', encoding='utf-8') as f:
+                        f.write(cleaned_content)
+
+
+def inject_back_to_toc_links_russian(docs_dir, description_md_path, content_entries, readme_path='README.md'):
+    """Добавляет русские навигационные ссылки 'Домой' и 'Назад' в файлы документации"""
+    abs_description = os.path.abspath(description_md_path)
+    abs_readme = os.path.abspath(readme_path)
+    
+    for entry in content_entries:
+        rel_file = entry["path"]
+        file_path = os.path.join(docs_dir, rel_file)
+        abs_file = os.path.abspath(file_path)
+        
+        if abs_file == abs_description or abs_file == abs_readme:
+            continue
+            
+        with open(file_path, encoding="utf-8") as f:
+            content = f.read()
+        
+        relative_to_readme = os.path.relpath(readme_path, os.path.dirname(file_path)).replace("\\", "/")
+        relative_to_description = os.path.relpath(description_md_path, os.path.dirname(file_path)).replace("\\", "/")
+        
+        home_link = f"[Домой]({relative_to_readme})"
+        back_link = f"[Назад]({relative_to_description})"
+        
+        if home_link in content and back_link in content:
+            continue
+        
+        navigation = f"{home_link} | {back_link}\n\n"
+        updated = f"{navigation}{content}"
+        
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(updated)
 
 
 def inject_back_to_toc_links(docs_dir, toc_md_path, toc):
