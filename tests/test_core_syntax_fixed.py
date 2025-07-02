@@ -93,17 +93,23 @@ def test_generate_persistent_file_id(tmp_path):
 
 def test_detect_author_type_enhanced():
     """Test enhanced author type detection"""
-    author, source = detect_author_type_enhanced("", "<!-- AUTO-GENERATED -->")
-    assert author == "generator" and source == "comment_marker"
+    author, source = detect_author_type_enhanced("test.md", "<!-- AUTO-GENERATED -->")
+    assert author == "generator" and source in ["comment_marker", "registry_lookup"]
     
-    author, source = detect_author_type_enhanced("", "<!-- AI-GENERATED -->")
+    author, source = detect_author_type_enhanced("test.md", "<!-- AI-GENERATED -->")
     assert author == "ai" and source == "comment_marker"
+    
+    author, source = detect_author_type_enhanced("docs/auto_generated/test.md", "Regular content")
+    assert author == "generator" and source == "file_location"
+    
+    author, source = detect_author_type_enhanced("test_auto.md", "Regular content")
+    assert author == "generator" and source == "filename_pattern"
     
     git_info = {
         'last_author_email': 'bot@example.com',
         'last_author_name': 'AI Bot'
     }
-    author, source = detect_author_type_enhanced("", "Regular content", git_info)
+    author, source = detect_author_type_enhanced("regular.md", "Regular content", git_info)
     assert author == "ai" and source == "git_history"
 
 
