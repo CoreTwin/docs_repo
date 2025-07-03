@@ -63,12 +63,18 @@ API documentation for the test project.
         
         try:
             result = subprocess.run([
+                sys.executable, "-m", "pip", "install", "-e", "/home/ubuntu/repos/docs_repo"
+            ], check=True, capture_output=True, text=True, cwd=test_repo)
+            
+            result = subprocess.run([
                 sys.executable, "-c", 
                 "from update_docs.core import update_content_system; print('✅ Package import successful')"
-            ], check=True, capture_output=True, text=True)
+            ], check=True, capture_output=True, text=True, cwd=test_repo)
             print(result.stdout.strip())
         except subprocess.CalledProcessError as e:
-            print(f"❌ Package import failed: {e}")
+            print(f"❌ Package installation/import failed: {e}")
+            print(f"stdout: {e.stdout}")
+            print(f"stderr: {e.stderr}")
             return False
         
         try:
@@ -126,7 +132,7 @@ API documentation for the test project.
         try:
             description_content = description_md.read_text(encoding='utf-8')
             
-            if "# Описание документации проекта" not in description_content:
+            if "# 📘 Структура документации проекта" not in description_content:
                 print("❌ Description_for_agents.md missing main header")
                 return False
             

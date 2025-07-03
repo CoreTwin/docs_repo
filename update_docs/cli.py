@@ -17,15 +17,22 @@ def find_project_root() -> Path:
     return path
 
 def main():
-    parser = argparse.ArgumentParser(description="Update and validate documentation structure.")
-    parser.add_argument(
-        "--docs", default="docs", help="Path to documentation root directory"
+    parser = argparse.ArgumentParser(
+        description="Комплексная система автоматизации документации для проектов с Markdown файлами",
+        epilog="Примеры использования:\n"
+               "  update-docs --docs docs --content-json content/Content.json --description-md content/Description_for_agents.md\n"
+               "  update-docs --toc toc.json --toc-md toc.md\n"
+               "\nДля получения дополнительной информации посетите: https://github.com/CoreTwin/docs_repo",
+        formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
-        "--toc", default="toc.json", help="Path to TOC file (output)"
+        "--docs", default="docs", help="Путь к корневой директории документации"
     )
     parser.add_argument(
-        "--toc-md", help="Path to Markdown TOC file (output)", default=None
+        "--toc", default="toc.json", help="Путь к файлу TOC (вывод)"
+    )
+    parser.add_argument(
+        "--toc-md", help="Путь к Markdown файлу TOC (вывод)", default=None
     )
     parser.add_argument(
         "--comprehensive", action="store_true",
@@ -38,6 +45,12 @@ def main():
     parser.add_argument(
         "--exclude", nargs="*", default=[],
         help="Additional patterns to exclude from scanning"
+    )
+    parser.add_argument(
+        "--content-json", help="Путь к файлу Content.json (вывод)", default=None
+    )
+    parser.add_argument(
+        "--description-md", help="Путь к файлу описания для агентов (вывод)", default=None
     )
     parser.add_argument(
         "--from-json", action="store_true",
@@ -58,6 +71,8 @@ def main():
     docs = resolve(args.docs)
     toc = resolve(args.toc)
     toc_md = resolve(args.toc_md) if args.toc_md else None
+    content_json = resolve(args.content_json) if args.content_json else None
+    description_md = resolve(args.description_md) if args.description_md else None
 
     if args.from_json:
         if not toc_md:
@@ -87,10 +102,13 @@ def main():
             exclude_patterns=args.exclude
         )
     else:
-        if (str(toc).endswith('Content.json') or 
+        if (content_json or description_md or 
+            str(toc).endswith('Content.json') or 
             (toc_md and str(toc_md).endswith('Description_for_agents.md'))):
             try:
-                update_content_system(str(docs), str(toc), str(toc_md) if toc_md else None)
+                content_json_path = str(content_json) if content_json else str(toc)
+                description_md_path = str(description_md) if description_md else (str(toc_md) if toc_md else None)
+                update_content_system(str(docs), content_json_path, description_md_path)
             except Exception as e:
                 print(f"❌ Ошибка при обновлении Content.json системы: {e}")
                 return
