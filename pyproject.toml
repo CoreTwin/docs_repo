@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "Комплексная система автоматизации документации"
 readme = "README.md"
 requires-python = ">=3.7"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
     {name = "CoreTwin System", email = "support@coretwin.com"}
 ]
@@ -17,13 +17,13 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Documentation",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
     "click>=8.0.0",
     "gitpython>=3.1.0",
     "watchdog>=2.1.0",
+    "requests>=2.25.0",
 ]
 
 [project.optional-dependencies]
