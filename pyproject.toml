@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "update-docs-system"
+dynamic = ["version"]
+description = "Комплексная система автоматизации документации"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "MIT"}
+authors = [
+    {name = "CoreTwin System", email = "support@coretwin.com"}
+]
+keywords = ["documentation", "markdown", "automation", "git"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Documentation",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "click>=8.0.0",
+    "gitpython>=3.1.0",
+    "watchdog>=2.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov>=2.0",
+    "black>=21.0",
+    "flake8>=3.8",
+]
+
+[project.urls]
+Homepage = "https://github.com/CoreTwin/docs_repo"
+Documentation = "https://github.com/CoreTwin/docs_repo/blob/main/README.md"
+Repository = "https://github.com/CoreTwin/docs_repo.git"
+Issues = "https://github.com/CoreTwin/docs_repo/issues"
+
+[project.scripts]
+update-docs = "update_docs.cli:main"
+
+[tool.setuptools_scm]
+write_to = "update_docs/_version.py"
+
+[tool.setuptools.packages.find]
+include = ["update_docs*"]
+
+[tool.setuptools.package-data]
+update_docs = ["templates/*"]
