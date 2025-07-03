@@ -45,6 +45,8 @@ jobs:
         if echo "$CHANGED_FILES" | grep -E '\\.md$'; then
           echo "md_changed=true" >> $GITHUB_OUTPUT
           echo "📝 Markdown files changed, updating documentation..."
+          echo "Changed files:"
+          echo "$CHANGED_FILES" | grep -E '\\.md$'
         else
           echo "md_changed=false" >> $GITHUB_OUTPUT
           echo "ℹ️  No markdown files changed"
