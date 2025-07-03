@@ -1,229 +1,509 @@
-# update-docs
+# update-docs-system
 
-Комплексная система автоматизации документации для проектов с Markdown файлами. Инструмент обеспечивает автоматическое сканирование, структурирование, навигацию и защиту документации с интеллектуальным определением авторства.
+Комплексная система автоматизации документации для проектов с Markdown файлами. Поддерживает автоматическое создание оглавлений, определение авторства, русскую навигацию и интеграцию с различными системами CI/CD.
 
-## 🎯 Основные возможности
+## 🚀 Возможности
 
-### 📋 Система управления содержимым
-- **Content.json** - машиночитаемый индекс всех файлов документации с метаданными
-- **Description_for_agents.md** - структурированное оглавление для AI-систем и разработчиков
-- **Автоматическая навигация** - русские ссылки "Домой" и "Назад" во всех файлах
-- **Persistent file_id** - уникальные идентификаторы файлов на основе содержимого
+- **Автоматическое создание оглавления** - сканирует Markdown файлы и создает структурированное оглавление
+- **Система Content.json** - генерирует метаданные документации с определением авторства
+- **Определение авторства** - классифицирует файлы как созданные человеком, ИИ или автогенератором
+- **Русская навигация** - добавляет ссылки "Домой" и "Назад" для удобной навигации
+- **Автогенераторы** - поддержка создания и защиты автогенерированных файлов
+- **Множественные методы развертывания** - PyPI, Git Submodule, Docker, GitHub Actions
+- **Автоматизация** - GitHub Actions, pre-commit hooks, file watcher
 
-### 🤖 Интеллектуальное определение авторства
-- **Человек (human)** - файлы, созданные разработчиками
-- **ИИ (ai)** - файлы, созданные AI-системами (ChatGPT, Claude, Devin)
-- **Генератор (generator)** - автоматически созданные файлы скриптами
-- **Смешанное (mixed)** - файлы с множественным авторством
+## 📦 Установка и развертывание
 
-### 🔒 Защита автогенерированных файлов
-- **Многоуровневая детекция** автогенераторов:
-  1. Реестр генераторов (`generator_registry.json`)
-  2. Маркеры комментариев (`<!-- AUTO-GENERATED -->`)
-  3. Расположение файлов (`/auto_generated/`)
-  4. Паттерны имен файлов (`*_auto.md`, `api_documentation.md`)
-- **Автоматическая защита** - файлы генераторов помечаются как `editable=false`
-- **Визуальные индикаторы** - иконки 🔒 и ⚙️ для защищенных файлов
-
-### 📖 Классические функции
-- **TOC генерация** - автоматическое создание оглавлений в JSON и Markdown
-- **Include-директивы** - вставка содержимого между файлами `<!-- include:file#id -->`
-- **Валидация структуры** - проверка ссылок, заголовков и целостности
-- **Git интеграция** - pre-commit hooks для автоматического обновления
-
-## 📚 Документация проекта
-
-- [📋 Структурированное содержание (Content.json)](content/Content.json) - машиночитаемый индекс всех файлов документации
-- [📖 Навигация для агентов (Description_for_agents.md)](content/Description_for_agents.md) - структурированное оглавление для AI-систем
-
-## 📦 Установка
+### Метод 1: PyPI пакет (Рекомендуется)
 
 ```bash
-pip install -r requirements.txt
+# Установка пакета
+pip install update-docs-system
+
+# Быстрая настройка в целевом репозитории
+curl -sSL https://raw.githubusercontent.com/CoreTwin/docs_repo/main/scripts/setup_automation.sh | bash
+
+# Или ручная настройка
+update-docs --docs docs --content-json content/Content.json --description-md content/Description_for_agents.md
 ```
 
-## 🚀 Использование
-
-### Современная система Content.json (рекомендуется)
+### Метод 2: Git Submodule
 
 ```bash
-# Создание полной системы документации с определением авторства
-python -c "
-from update_docs.core import update_content_system
-update_content_system('docs', 'content/Content.json', 'content/Description_for_agents.md')
-"
+# В целевом репозитории
+git submodule add https://github.com/CoreTwin/docs_repo.git tools/update-docs
+git submodule update --init --recursive
 
-# Или через CLI
-python -m update_docs.cli --docs docs --content-json content/Content.json --description-md content/Description_for_agents.md
+# Использование
+cd tools/update-docs
+python -m update_docs.cli --docs ../../docs --content-json ../../content/Content.json --description-md ../../content/Description_for_agents.md
 ```
 
-**Результат:**
-- `content/Content.json` - структурированный индекс с метаданными и авторством
-- `content/Description_for_agents.md` - человекочитаемое оглавление с навигацией
-- Автоматические ссылки "Домой" и "Назад" во всех файлах документации
-
-### Классическая система TOC (legacy)
+### Метод 3: Docker контейнер
 
 ```bash
-# Базовое обновление документации
-python -m update_docs.cli --docs docs --toc toc.json
+# Сборка образа
+docker build -t update-docs:latest https://github.com/CoreTwin/docs_repo.git
+
+# Использование в целевом репозитории
+docker run --rm -v $(pwd):/workspace update-docs:latest \
+  --docs docs \
+  --content-json content/Content.json \
+  --description-md content/Description_for_agents.md
+```
+
+### Метод 4: GitHub Actions
+
+Создайте `.github/workflows/update-docs.yml` в целевом репозитории:
+
+```yaml
+name: 📚 Auto Update Documentation
+
+on:
+  push:
+    branches: [main, master, develop]
+    paths: ['**/*.md', 'docs/**/*']
+  pull_request:
+    branches: [main, master, develop]
+    paths: ['**/*.md', 'docs/**/*']
+
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: 'pip'
+    
+    - name: 📦 Install update-docs-system
+      run: pip install update-docs-system
+    
+    - name: 🔍 Check for .md changes
+      id: check_changes
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+        else
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
+        fi
+        
+        if echo "$CHANGED_FILES" | grep -E '\\.md$'; then
+          echo "md_changed=true" >> $GITHUB_OUTPUT
+          echo "📝 Markdown files changed, updating documentation..."
+        else
+          echo "md_changed=false" >> $GITHUB_OUTPUT
+          echo "ℹ️  No markdown files changed"
+        fi
+    
+    - name: 📚 Update documentation
+      if: steps.check_changes.outputs.md_changed == 'true'
+      run: |
+        update-docs --docs docs --content-json content/Content.json --description-md content/Description_for_agents.md
+        echo "✅ Documentation updated successfully"
+    
+    - name: 💾 Commit updated documentation
+      if: steps.check_changes.outputs.md_changed == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action Bot"
+        
+        mkdir -p content
+        git add content/Content.json content/Description_for_agents.md docs/ || true
+        
+        if git diff --staged --quiet; then
+          echo "ℹ️  No changes to commit"
+        else
+          git commit -m "📚 Auto-update documentation"
+          
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            git push
+            echo "✅ Documentation committed and pushed"
+          fi
+        fi
+```
+
+## 🔧 Использование
+
+### Современная система (Content.json)
+
+```bash
+# Обновление документации с генерацией Content.json
+update-docs --docs docs --content-json content/Content.json --description-md content/Description_for_agents.md
+
+# Автоматическое определение системы по расширениям файлов
+update-docs --docs docs --toc Content.json --toc-md Description_for_agents.md
+```
+
+### Классическая система (toc.json)
+
+```bash
+# Создание JSON оглавления
+update-docs --docs docs --toc toc.json
 
 # Создание Markdown оглавления
-python -m update_docs.cli --docs docs --toc toc.json --toc-md toc.md
+update-docs --docs docs --toc toc.json --toc-md toc.md
 
-# Комплексное сканирование с обнаружением дубликатов
-python -m update_docs.cli --docs docs --toc toc.json --comprehensive --similarity-threshold 0.8
+# Генерация из существующего toc.json
+update-docs --from-json --toc toc.json --toc-md toc.md
 ```
 
-### Работа с автогенераторами
+### Справка по командам
 
 ```bash
-# Создание примера автогенератора
-python example_doc_generator.py
+# Получить полную справку
+update-docs --help
 
-# Тестирование системы определения автогенераторов
-python test_enhanced_generator_detection.py
-
-# Сканирование функций-генераторов в проекте
-python -c "
-from update_docs.core import scan_for_generator_functions
-generators = scan_for_generator_functions()
-for gen in generators:
-    print(f'{gen[\"function\"]} в {gen[\"file\"]}')
-"
+# Примеры использования
+update-docs --docs docs --content-json content/Content.json --description-md content/Description_for_agents.md
+update-docs --toc toc.json --toc-md toc.md
 ```
 
-## 🔧 Интеграция с Git
+## 🤖 Автоматизация
 
-### Современный подход (Content.json)
+### Автоматическая настройка
+
+Используйте скрипт автоматической настройки для быстрого развертывания:
+
 ```bash
-# Pre-commit hook для Content.json системы
-cat > .git/hooks/pre-commit << 'EOF'
+# Скачать и запустить скрипт настройки
+curl -sSL https://raw.githubusercontent.com/CoreTwin/docs_repo/main/scripts/setup_automation.sh | bash
+
+# Или локально (если репозиторий уже клонирован)
+bash scripts/setup_automation.sh
+```
+
+**Скрипт автоматически:**
+- Устанавливает update-docs-system
+- Создает структуру папок (docs/, content/, .github/workflows/, scripts/)
+- Настраивает GitHub Actions workflow
+- Устанавливает pre-commit hook
+- Создает file watcher для разработки
+- Генерирует примеры документации
+- Запускает первое обновление
+
+### Pre-commit Hook
+
+Создайте `.git/hooks/pre-commit`:
+
+```bash
 #!/bin/bash
-python -c "
-from update_docs.core import update_content_system
-update_content_system('docs', 'content/Content.json', 'content/Description_for_agents.md')
+echo "🔍 Checking for markdown file changes..."
+
+md_files_changed=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\\.md$' || true)
+
+if [ -n "$md_files_changed" ]; then
+    echo "📝 Markdown files changed:"
+    echo "$md_files_changed" | sed 's/^/  - /'
+    echo ""
+    echo "🔄 Updating documentation..."
+    
+    mkdir -p content
+    
+    if command -v update-docs &> /dev/null; then
+        update-docs --docs docs --content-json content/Content.json --description-md content/Description_for_agents.md
+        update_result=$?
+    else
+        python3 -c "
+try:
+    from update_docs.core import update_content_system
+    update_content_system('docs', 'content/Content.json', 'content/Description_for_agents.md')
+    print('✅ Documentation updated via Python import')
+except Exception as e:
+    print(f'❌ Error: {e}')
+    exit(1)
 "
-git add content/Content.json content/Description_for_agents.md docs/
-EOF
-
-chmod +x .git/hooks/pre-commit
+        update_result=$?
+    fi
+    
+    if [ $update_result -eq 0 ]; then
+        git add content/Content.json content/Description_for_agents.md docs/ 2>/dev/null || true
+        echo "✅ Documentation updated and staged"
+    else
+        echo "❌ Failed to update documentation"
+        exit 1
+    fi
+else
+    echo "ℹ️  No markdown files changed, skipping documentation update"
+fi
 ```
 
-### Классический подход (TOC)
-```bash
-# Pre-commit hook для toc.json
-cat > .git/hooks/pre-commit << 'EOF'
-#!/bin/bash
-python -m update_docs.cli --docs docs --toc toc.json
-git add toc.json
-EOF
-
-chmod +x .git/hooks/pre-commit
-```
-
-## 🧪 Тестирование
+### File Watcher для разработки
 
 ```bash
-# Запуск всех тестов
-python -m pytest tests/test_core_syntax_fixed.py -v
+# Установка зависимостей
+pip install watchdog
 
-# Тестирование соответствия спецификации
-python test_specification_compliance.py
-
-# Тестирование системы автогенераторов
-python test_enhanced_generator_detection.py
-
-# Тестирование русской навигации
-python test_russian_navigation.py
+# Запуск file watcher
+python scripts/watch_docs.py
 ```
 
-## 📊 Мониторинг и анализ
+### Makefile для удобства
+
+```makefile
+.PHONY: docs-update docs-watch docs-install docs-setup help
+
+help:
+	@echo "📚 Documentation Commands:"
+	@echo "  docs-install  - Install update-docs-system"
+	@echo "  docs-setup    - Setup automation (GitHub Actions, hooks, watcher)"
+	@echo "  docs-update   - Update documentation once"
+	@echo "  docs-watch    - Start file watcher for live updates"
+
+docs-install:
+	@echo "📦 Installing update-docs-system..."
+	@pip install update-docs-system
+
+docs-setup:
+	@echo "🚀 Setting up update-docs automation..."
+	@bash scripts/setup_automation.sh
+
+docs-update:
+	@echo "📚 Updating documentation..."
+	@update-docs --docs docs --content-json content/Content.json --description-md content/Description_for_agents.md
+	@echo "✅ Documentation updated"
+
+docs-watch:
+	@echo "👀 Starting documentation watcher..."
+	@python scripts/watch_docs.py
+```
+
+## 📁 Структура целевого репозитория
+
+После настройки ваш репозиторий будет иметь следующую структуру:
+
+```
+target-repo/
+├── docs/                           # Документация проекта
+│   ├── README.md
+│   ├── api/
+│   └── guides/
+├── content/                        # Метаданные документации
+│   ├── Content.json               # Генерируется update-docs
+│   └── Description_for_agents.md  # Генерируется update-docs
+├── .github/
+│   └── workflows/
+│       └── update-docs.yml        # CI/CD для документации
+├── scripts/
+│   └── watch_docs.py              # File watcher для разработки
+├── .git/hooks/
+│   └── pre-commit                 # Pre-commit hook
+├── Makefile                       # Команды для удобства
+└── .gitignore                     # Исключения для временных файлов
+```
+
+## 🔍 Определение авторства
+
+Система автоматически определяет тип автора для каждого файла:
+
+- **human** - файлы, созданные человеком
+- **ai** - файлы, созданные ИИ (по git истории или маркерам)
+- **generator** - автогенерированные файлы (защищены от редактирования)
+- **mixed** - файлы со смешанным авторством
+
+### Маркеры автогенерации
+
+```markdown
+<!-- AUTO-GENERATED -->
+<!-- AI-GENERATED -->
+<!-- GENERATOR: script_name.py -->
+```
+
+## 📊 Content.json структура
+
+```json
+[
+  {
+    "path": "docs/README.md",
+    "title": "Project Documentation",
+    "author": "human",
+    "editable": true,
+    "file_id": "readme-a1b2c3d4",
+    "headers": [
+      {
+        "level": 1,
+        "title": "Project Documentation",
+        "id": "project-documentation",
+        "parent_id": null,
+        "excerpt": "Welcome to the project..."
+      }
+    ]
+  }
+]
+```
+
+## 🏠 Навигационные ссылки
+
+Система автоматически добавляет русские навигационные ссылки:
+
+- **🏠 Домой** - ссылка на главную страницу
+- **⬆️ Назад** - ссылка на родительский документ
+
+## 🧪 Тестирование интеграции
+
+Проверьте работу системы в вашем репозитории:
 
 ```bash
-# Анализ авторства файлов
-python -c "
-import json
-with open('content/Content.json', 'r') as f:
-    data = json.load(f)
-authors = {}
-for entry in data:
-    author = entry.get('author', 'unknown')
-    authors[author] = authors.get(author, 0) + 1
-print('Статистика авторства:', authors)
-"
+# Тест установки пакета
+pip install update-docs-system
 
-# Поиск защищенных файлов
-python -c "
-import json
-with open('content/Content.json', 'r') as f:
-    data = json.load(f)
-protected = [entry['path'] for entry in data if not entry.get('editable', True)]
-print('Защищенные файлы:', protected)
-"
+# Тест базовой функциональности
+update-docs --docs docs --content-json content/Content.json --description-md content/Description_for_agents.md
+
+# Проверка созданных файлов
+ls -la content/
+cat content/Content.json | head -20
+
+# Тест внешнего развертывания
+python test_external_deployment.py
 ```
 
-## 📁 Структура проекта
+## 🚀 Быстрый старт
+
+1. **Установите пакет:**
+   ```bash
+   pip install update-docs-system
+   ```
+
+2. **Запустите автоматическую настройку:**
+   ```bash
+   curl -sSL https://raw.githubusercontent.com/CoreTwin/docs_repo/main/scripts/setup_automation.sh | bash
+   ```
+
+3. **Или настройте вручную:**
+   ```bash
+   # Создайте структуру папок
+   mkdir -p docs content .github/workflows scripts
+   
+   # Запустите первое обновление
+   update-docs --docs docs --content-json content/Content.json --description-md content/Description_for_agents.md
+   
+   # Зафиксируйте изменения
+   git add .
+   git commit -m "Setup update-docs automation"
+   git push
+   ```
+
+## 🔧 Настройка для разных сценариев
+
+### Для команды разработчиков
+- **PyPI пакет** + **GitHub Actions** для автоматизации
+- **Pre-commit hooks** для локальной проверки
+
+### Для личных проектов
+- **Git Submodule** + **локальные скрипты**
+- **File watcher** для активной разработки документации
+
+### Для CI/CD интеграции
+- **Docker контейнер** для изоляции
+- **GitHub Actions** с кешированием зависимостей
+
+## 📋 Checklist для внедрения
+
+- [ ] Выбрать способ развертывания (PyPI/Git Submodule/Docker/GitHub Actions)
+- [ ] Установить update-docs-system в целевом репозитории
+- [ ] Создать структуру папок (docs/, content/, scripts/)
+- [ ] Настроить автоматизацию (GitHub Actions/pre-commit/file watcher)
+- [ ] Запустить первое обновление документации
+- [ ] Протестировать работу системы
+- [ ] Обновить .gitignore для исключения временных файлов
+- [ ] Документировать процесс для команды
+
+## 🤖 Автогенераторы
+
+Создание автогенератора:
+
+```python
+from update_docs.core import register_auto_generator
+
+@register_auto_generator("example_generator.py")
+def create_example_docs():
+    return "<!-- AUTO-GENERATED -->\n# Generated Documentation"
+```
+
+## 🔧 Разработка и тестирование
+
+### Локальная разработка
+
+```bash
+# Клонирование репозитория
+git clone https://github.com/CoreTwin/docs_repo.git
+cd docs_repo
+
+# Установка в режиме разработки
+pip install -e .
+
+# Запуск тестов
+python -m pytest tests/ -v
+
+# Тестирование внешнего развертывания
+python test_external_deployment.py
+```
+
+### Структура проекта
 
 ```
 update_docs/
-├── __init__.py          # Основные утилиты
-├── cli.py              # CLI интерфейс
-└── core.py             # Основная логика обработки
+├── __init__.py          # Основной модуль
+├── cli.py              # Интерфейс командной строки
+├── core.py             # Основная логика
+└── templates/          # Шаблоны автоматизации
+    ├── github_workflow.yml
+    ├── pre_commit_hook.sh
+    ├── watch_docs.py
+    ├── setup_automation.sh
+    └── Makefile
 
-content/                 # Современная система документации
-├── Content.json        # Структурированный индекс файлов
-└── Description_for_agents.md  # Человекочитаемое оглавление
+content/                # Метаданные документации
+├── Content.json        # Структурированные данные о файлах
+└── Description_for_agents.md  # Описание для ИИ-систем
 
-tests/
-├── test_core_syntax_fixed.py  # Основные тесты функций
-└── test_cli.py               # Тесты CLI интерфейса
+scripts/                # Вспомогательные скрипты
+├── build_and_publish.sh    # Сборка и публикация пакета
+└── setup_automation.sh     # Настройка автоматизации
 
-docs/                   # Документация проекта
-├── auto_generated/     # Автогенерированные файлы (защищены)
-├── README.md
-├── setup.md
-└── ...
-
-# Вспомогательные скрипты
-example_doc_generator.py           # Пример автогенератора
-test_enhanced_generator_detection.py  # Тестирование автогенераторов
-test_specification_compliance.py      # Проверка соответствия спецификации
-test_russian_navigation.py           # Тестирование русской навигации
+tests/                  # Тесты
+├── test_cli.py         # Тесты CLI
+└── test_core.py        # Тесты основной логики
 ```
 
-## 🔍 Система определения авторства
+## 📋 Итоги реализации
 
-### Типы авторства
-- **human** - файлы, созданные разработчиками вручную
-- **ai** - файлы, созданные AI-системами (определяется по маркерам и git истории)
-- **generator** - автоматически созданные файлы (защищены от редактирования)
-- **mixed** - файлы с множественным авторством
+### ✅ Завершенные функции
 
-### Методы детекции автогенераторов
-1. **Реестр генераторов** - проверка в `generator_registry.json`
-2. **Маркеры комментариев** - `<!-- AUTO-GENERATED -->`, `# AUTO-GENERATED`
-3. **Расположение файлов** - папки `/auto_generated/`
-4. **Паттерны имен** - `*_auto.md`, `*_generated.md`, `api_documentation.md`
+1. **Система Content.json** - полная замена toc.json с расширенными метаданными
+2. **Определение авторства** - многоуровневая система классификации файлов
+3. **Автогенераторы** - поддержка создания и защиты автогенерированных файлов
+4. **Русская навигация** - ссылки "Домой" и "Назад" во всех документах
+5. **Множественные методы развертывания** - PyPI, Git Submodule, Docker, GitHub Actions
+6. **Автоматизация** - GitHub Actions, pre-commit hooks, file watcher
+7. **Persistent file IDs** - отслеживание файлов при переименовании
+8. **Иерархические заголовки** - parent_id и excerpt для каждого заголовка
+9. **Внешнее развертывание** - полная изоляция от целевых репозиториев
+10. **Комплексное тестирование** - интеграционные тесты для внешнего развертывания
 
-### Защита файлов
-Файлы с авторством "generator" автоматически:
-- Помечаются как `editable: false` в Content.json
-- Отображаются с иконкой 🔒 в Description_for_agents.md
-- Защищены от случайного редактирования
+### 🔧 Технические особенности
 
-## 🎉 Итоги реализации
+- Обратная совместимость с toc.json системой
+- Автоматическое определение типа системы по расширениям файлов
+- Защита автогенерированных файлов от случайного редактирования
+- Поддержка аннотаций и дополнительной информации к заголовкам
+- Интеграция с git для определения авторства по истории коммитов
+- PyPI-совместимая структура пакета с шаблонами автоматизации
+- Полная изоляция кода от целевых репозиториев
 
-Система update-docs превратилась в комплексное решение для управления документацией:
+---
 
-### ✅ Реализованные функции
-- **Интеллектуальное определение авторства** с 4-уровневой системой детекции
-- **Автоматическая защита** автогенерированных файлов от редактирования
-- **Русская навигация** с ссылками "Домой" и "Назад"
-- **Persistent file_id** для стабильной идентификации файлов
-- **Content.json система** для структурированного управления документацией
-- **Comprehensive TOC** с обнаружением дубликатов и аннотациями
-
-### 🚀 Готово к использованию
-Система полностью протестирована и готова к промышленному использованию в проектах любого масштаба.
+📚 **Ссылки на документацию:**
+- [Content.json](content/Content.json) - Структурированные метаданные
+- [Description for Agents](content/Description_for_agents.md) - Описание для ИИ-систем
+- [Deployment Guide](DEPLOYMENT_GUIDE.md) - Подробное руководство по развертыванию
 
