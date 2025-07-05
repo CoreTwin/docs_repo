@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "update-docs-system"
-version = "1.0.3"
+version = "1.0.4"
 description = "Комплексная система автоматизации документации"
 readme = "README.md"
 requires-python = ">=3.7"
