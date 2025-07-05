@@ -8,7 +8,7 @@
 
 - 🤖 **ai**: 4 файлов
 - ⚙️ **generator**: 3 файлов
-- 👤 **human**: 32 файлов
+- 👤 **human**: 35 файлов
 
 ## 📁 auto_generated
 
@@ -314,6 +314,63 @@
 **File ID:** `manifest_versioning-f43e4861`  
 **Автор:** human | **Редактируемый:** Да
 
+
+### ✏️ 👤 [Автоматический запуск update-docs при изменении .md файлов](../docs/auto_trigger_guide.md)
+**File ID:** `auto_trigger_guide-60c0d0d9`  
+**Автор:** human | **Редактируемый:** Да
+
+**Структура заголовков:**
+- [Автоматический запуск update-docs при изменении .md файлов](../docs/auto_trigger_guide.md#автоматический-запуск-update-docs-при-изменении--md-файлов)
+  - [🎯 Способы автоматического запуска](../docs/auto_trigger_guide.md#--способы-автоматического-запуска)
+    - [1. 🔄 GitHub Actions (CI/CD) - Рекомендуется](../docs/auto_trigger_guide.md#1----github-actions--ci-cd----рекомендуется) — *```yaml name: 📚 Auto Update Documentation*
+      - [`.github/workflows/update-docs.yml`](../docs/auto_trigger_guide.md#--github-workflows-update-docs-yml-) — *```yaml name: 📚 Auto Update Documentation  on:*
+    - [2. 🪝 Git Pre-commit Hook (Локальная автоматизация)](../docs/auto_trigger_guide.md#2----git-pre-commit-hook--локальная-автоматизация-) — *```bash*
+      - [`.git/hooks/pre-commit`](../docs/auto_trigger_guide.md#--git-hooks-pre-commit-) — *```bash*
+- [Pre-commit hook для автоматического обновления документации](../docs/auto_trigger_guide.md#pre-commit-hook-для-автоматического-обновления-документации) — *echo "🔍 Checking for markdown file changes..."*
+- [Проверяем изменения в .md файлах](../docs/auto_trigger_guide.md#проверяем-изменения-в--md-файлах) — *md_files_changed=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\\.md$' || true)  if [...*
+      - [Установка pre-commit hook:](../docs/auto_trigger_guide.md#установка-pre-commit-hook-) — *```bash echo "📦 Setting up git hooks for update-docs..."*
+- [Создание скрипта установки setup_hooks.sh](../docs/auto_trigger_guide.md#создание-скрипта-установки-setup_hooks-sh) — *echo "📦 Setting up git hooks for update-docs..."*
+- [Копируем pre-commit hook](../docs/auto_trigger_guide.md#копируем-pre-commit-hook) — *cp scripts/pre-commit .git/hooks/pre-commit chmod +x .git/hooks/pre-commit*
+- [Устанавливаем update-docs если нужно](../docs/auto_trigger_guide.md#устанавливаем-update-docs-если-нужно) — *if ! command -v update-docs &> /dev/null; then echo "📥 Installing update-docs..." pip install git+ht...*
+    - [3. 👀 File Watcher (Режим разработки)](../docs/auto_trigger_guide.md#3----file-watcher--режим-разработки-) — *```python*
+      - [Python file watcher скрипт `watch_docs.py`:](../docs/auto_trigger_guide.md#python-file-watcher-скрипт--watch_docs-py--) — *```python """ Автоматический watcher для обновления документации при изменении .md файлов*
+      - [Установка зависимостей для watcher:](../docs/auto_trigger_guide.md#установка-зависимостей-для-watcher-) — *```bash pip install watchdog*
+- [Запуск watcher](../docs/auto_trigger_guide.md#запуск-watcher) — *python watch_docs.py ```*
+    - [4. 🔧 Make/Task Runner интеграция](../docs/auto_trigger_guide.md#4----make-task-runner-интеграция) — *```makefile*
+      - [`Makefile`:](../docs/auto_trigger_guide.md#-makefile--) — *```makefile  .PHONY: docs-watch docs-update docs-install*
+- [Makefile для автоматизации документации](../docs/auto_trigger_guide.md#makefile-для-автоматизации-документации) — *.PHONY: docs-watch docs-update docs-install*
+- [Установка update-docs](../docs/auto_trigger_guide.md#установка-update-docs) — *docs-install: @echo "📦 Installing update-docs..." @pip install git+https://github.com/your-username/...*
+- [Однократное обновление документации](../docs/auto_trigger_guide.md#однократное-обновление-документации) — *docs-update: @echo "📚 Updating documentation..." @python -c "from update_docs.core import update_con...*
+- [Запуск watcher режима](../docs/auto_trigger_guide.md#запуск-watcher-режима) — *docs-watch: @echo "👀 Starting documentation watcher..." @python watch_docs.py*
+- [Автоматическое обновление при изменении любого .md файла](../docs/auto_trigger_guide.md#автоматическое-обновление-при-изменении-любого--md-файла) — *docs-auto: docs/*.md @$(MAKE) docs-update ```*
+      - [Использование:](../docs/auto_trigger_guide.md#использование-) — *```bash make docs-install*
+- [Установка](../docs/auto_trigger_guide.md#установка) — *make docs-install  make docs-update*
+- [Однократное обновление](../docs/auto_trigger_guide.md#однократное-обновление) — *make docs-update  make docs-watch*
+- [Запуск watcher режима](../docs/auto_trigger_guide.md#запуск-watcher-режима) — *make docs-watch ```*
+    - [5. 🐳 Docker + Volume Monitoring](../docs/auto_trigger_guide.md#5----docker---volume-monitoring) — *```yaml version: '3.8'*
+      - [`docker-compose.yml`:](../docs/auto_trigger_guide.md#-docker-compose-yml--) — *```yaml version: '3.8'  services:*
+      - [`Dockerfile.docs-watcher`:](../docs/auto_trigger_guide.md#-dockerfile-docs-watcher--) — *```dockerfile FROM python:3.9-slim  WORKDIR /app*
+- [Устанавливаем зависимости](../docs/auto_trigger_guide.md#устанавливаем-зависимости) — *RUN pip install watchdog git+https://github.com/your-username/update-docs.git  COPY watch_docs.py .*
+- [Копируем watcher скрипт](../docs/auto_trigger_guide.md#копируем-watcher-скрипт) — *COPY watch_docs.py .  WORKDIR /workspace*
+  - [🚀 Рекомендуемая настройка](../docs/auto_trigger_guide.md#--рекомендуемая-настройка) — *```bash*
+    - [Для команды разработчиков:](../docs/auto_trigger_guide.md#для-команды-разработчиков-) — *```bash cp .github/workflows/update-docs.yml .github/workflows/*
+- [1. Установить GitHub Actions для автоматизации в CI/CD](../docs/auto_trigger_guide.md#1--установить-github-actions-для-автоматизации-в-ci-cd) — *cp .github/workflows/update-docs.yml .github/workflows/  chmod +x scripts/setup_hooks.sh*
+- [2. Настроить pre-commit hook для локальной разработки](../docs/auto_trigger_guide.md#2--настроить-pre-commit-hook-для-локальной-разработки) — *chmod +x scripts/setup_hooks.sh ./scripts/setup_hooks.sh*
+- [3. Для активной разработки документации](../docs/auto_trigger_guide.md#3--для-активной-разработки-документации) — *pip install watchdog python watch_docs.py ```*
+    - [Структура файлов в целевом репозитории:](../docs/auto_trigger_guide.md#структура-файлов-в-целевом-репозитории-) — *``` target-repo/ ├── .github/ │   └── workflows/*
+  - [🧪 Тестирование автоматизации](../docs/auto_trigger_guide.md#--тестирование-автоматизации) — *```bash*
+    - [Тестовый скрипт `test_automation.sh`:](../docs/auto_trigger_guide.md#тестовый-скрипт--test_automation-sh--) — *```bash echo "🧪 Testing documentation automation..."*
+- [Создаем тестовый файл](../docs/auto_trigger_guide.md#создаем-тестовый-файл) — *echo "# Test Document" > docs/test.md echo "This is a test document." >> docs/test.md*
+- [Ждем секунду](../docs/auto_trigger_guide.md#ждем-секунду) — *sleep 1  if [[ -f "content/Content.json" ]]; then*
+- [Проверяем, обновились ли файлы](../docs/auto_trigger_guide.md#проверяем--обновились-ли-файлы) — *if [[ -f "content/Content.json" ]]; then echo "✅ Content.json updated" else echo "❌ Content.json not...*
+- [Удаляем тестовый файл](../docs/auto_trigger_guide.md#удаляем-тестовый-файл) — *rm docs/test.md  echo "🎯 Test completed" ```*
+  - [📋 Итоговые рекомендации](../docs/auto_trigger_guide.md#--итоговые-рекомендации) — ***Для максимальной автоматизации используйте комбинацию:**  1. **GitHub Actions** - для CI/CD автом*
+  - [🎯 Оптимальное решение](../docs/auto_trigger_guide.md#--оптимальное-решение) — *1. Создание PyPI пакета - самый чистый способ:  ```Bash*
+- [В репозитории update-docs создайте setup.py](../docs/auto_trigger_guide.md#в-репозитории-update-docs-создайте-setup-py) — *pip install build python -m build pip install dist/update_docs-1.0.0-py3-none-any.whl ```*
+- [Установка один раз](../docs/auto_trigger_guide.md#установка-один-раз) — *pip install git+https://github.com/your-username/update-docs.git  cd /path/to/your-project*
+- [Использование в любом проекте](../docs/auto_trigger_guide.md#использование-в-любом-проекте) — *cd /path/to/your-project python -c " from update_docs.core import update_content_system update_conte...*
+  - [🔧 Альтернативные варианты](../docs/auto_trigger_guide.md#--альтернативные-варианты) — *Если не хотите устанавливать глобально - используйте Git Submodule:  ```bash*
+- [В целевом репозитории](../docs/auto_trigger_guide.md#в-целевом-репозитории) — *git submodule add https://github.com/your-username/update-docs.git tools/update-docs echo "tools/" >...*
 
 ### ✏️ 👤 [Архитектура CoreTwin Platform](../docs/overview.md)
 **File ID:** `overview-0b297153`  
@@ -777,6 +834,68 @@
     - [Качество кода](../docs/technology-stack.md#качество-кода) — *- **Покрытие тестами** не менее 80% - **Code review** для всех изменений - **Автоматическое форматир...*
     - [Производительность](../docs/technology-stack.md#производительность) — *- **Lazy loading** для фронтенда - **Code splitting** для оптимизации загрузки - **Database indexing...*
 
+### ✏️ 👤 [Руководство по развертыванию update-docs в других репозиториях](../docs/deployment_guide.md)
+**File ID:** `deployment_guide-d05fb34b`  
+**Автор:** human | **Редактируемый:** Да
+
+**Структура заголовков:**
+- [Руководство по развертыванию update-docs в других репозиториях](../docs/deployment_guide.md#руководство-по-развертыванию-update-docs-в-других-репозиториях)
+  - [🎯 Способы развертывания](../docs/deployment_guide.md#--способы-развертывания)
+    - [1. 📦 Установка как Python пакет (Рекомендуется)](../docs/deployment_guide.md#1----установка-как-python-пакет--рекомендуется-) — *```bash*
+      - [Вариант 1.1: Через pip + Git](../docs/deployment_guide.md#вариант-1-1--через-pip---git) — *```bash pip install git+https://github.com/your-username/update-docs.git*
+- [В целевом репозитории](../docs/deployment_guide.md#в-целевом-репозитории) — *pip install git+https://github.com/your-username/update-docs.git  python -c "*
+- [Использование](../docs/deployment_guide.md#использование) — *python -c " from update_docs.core import update_content_system update_content_system('docs', 'conten...*
+      - [Вариант 1.2: Создание PyPI пакета](../docs/deployment_guide.md#вариант-1-2--создание-pypi-пакета) — *```bash python setup.py sdist bdist_wheel twine upload dist/**
+- [В репозитории update-docs](../docs/deployment_guide.md#в-репозитории-update-docs) — *python setup.py sdist bdist_wheel twine upload dist/**
+- [В целевом репозитории](../docs/deployment_guide.md#в-целевом-репозитории) — *pip install update-docs ```  **setup.py для update-docs:***
+    - [2. 🔧 Git Submodule](../docs/deployment_guide.md#2----git-submodule) — *```bash*
+      - [Настройка:](../docs/deployment_guide.md#настройка-) — *```bash git submodule add https://github.com/your-username/update-docs.git tools/update-docs git sub...*
+- [В целевом репозитории](../docs/deployment_guide.md#в-целевом-репозитории) — *git submodule add https://github.com/your-username/update-docs.git tools/update-docs git submodule u...*
+- [Добавить в .gitignore целевого репозитория](../docs/deployment_guide.md#добавить-в--gitignore-целевого-репозитория) — *echo "tools/update-docs/" >> .gitignore ```*
+      - [Использование:](../docs/deployment_guide.md#использование-) — *```bash cd tools/update-docs*
+- [Скрипт запуска (update_docs.sh)](../docs/deployment_guide.md#скрипт-запуска--update_docs-sh-) — *cd tools/update-docs python -m update_docs.cli --docs ../../docs --content-json ../../content/Conten...*
+    - [3. 🐳 Docker контейнер](../docs/deployment_guide.md#3----docker-контейнер) — *```dockerfile FROM python:3.9-slim*
+      - [Dockerfile для update-docs:](../docs/deployment_guide.md#dockerfile-для-update-docs-) — *```dockerfile FROM python:3.9-slim  WORKDIR /app*
+      - [Использование:](../docs/deployment_guide.md#использование-) — *```bash docker build -t update-docs:latest .*
+- [Сборка образа (в репозитории update-docs)](../docs/deployment_guide.md#сборка-образа--в-репозитории-update-docs-) — *docker build -t update-docs:latest .  docker run --rm -v $(pwd):/workspace update-docs:latest \*
+- [Использование в целевом репозитории](../docs/deployment_guide.md#использование-в-целевом-репозитории) — *docker run --rm -v $(pwd):/workspace update-docs:latest \ --docs docs \ --content-json content/Conte...*
+    - [4. 📋 GitHub Actions Workflow](../docs/deployment_guide.md#4----github-actions-workflow) — *```yaml name: Update Documentation*
+      - [`.github/workflows/update-docs.yml` в целевом репозитории:](../docs/deployment_guide.md#--github-workflows-update-docs-yml--в-целевом-репозитории-) — *```yaml name: Update Documentation  on:*
+    - [5. 🛠️ Локальный инструмент разработчика](../docs/deployment_guide.md#5-----локальный-инструмент-разработчика) — *```bash*
+      - [Создание глобальной команды:](../docs/deployment_guide.md#создание-глобальной-команды-) — *```bash pip install -e .*
+- [В репозитории update-docs](../docs/deployment_guide.md#в-репозитории-update-docs) — *pip install -e .  update-docs --docs docs --content-json content/Content.json --description-md conte...*
+- [Теперь доступно глобально](../docs/deployment_guide.md#теперь-доступно-глобально) — *update-docs --docs docs --content-json content/Content.json --description-md content/Description_for...*
+      - [Или через alias:](../docs/deployment_guide.md#или-через-alias-) — *```bash alias update-docs='python /path/to/update-docs/update_docs/cli.py'*
+- [В ~/.bashrc или ~/.zshrc](../docs/deployment_guide.md#в----bashrc-или----zshrc) — *alias update-docs='python /path/to/update-docs/update_docs/cli.py'  cd /path/to/target-repo*
+- [Использование в любом репозитории](../docs/deployment_guide.md#использование-в-любом-репозитории) — *cd /path/to/target-repo update-docs --docs docs --content-json content/Content.json --description-md...*
+  - [🚀 Рекомендуемые конфигурации](../docs/deployment_guide.md#--рекомендуемые-конфигурации) — *1. **PyPI пакет** + **GitHub Actions** для автоматизации 2. **Pre-commit hooks** для локальной пров*
+    - [Для команды разработчиков:](../docs/deployment_guide.md#для-команды-разработчиков-) — *1. **PyPI пакет** + **GitHub Actions** для автоматизации 2. **Pre-commit hooks** для локальной прове...*
+    - [Для личных проектов:](../docs/deployment_guide.md#для-личных-проектов-) — *1. **Git Submodule** + **локальные скрипты** 2. **Docker контейнер** для изоляции*
+    - [Для CI/CD интеграции:](../docs/deployment_guide.md#для-ci-cd-интеграции-) — *1. **Docker образ** в registry 2. **GitHub Actions** с кешированием*
+  - [📁 Структура файлов в целевом репозитории](../docs/deployment_guide.md#--структура-файлов-в-целевом-репозитории) — *``` target-repo/ ├── docs/                    # Документация проекта*
+  - [🔒 Настройка безопасности](../docs/deployment_guide.md#--настройка-безопасности) — *```gitignore*
+    - [.gitignore для целевого репозитория:](../docs/deployment_guide.md#-gitignore-для-целевого-репозитория-) — *```gitignore *.tmp .update-docs-cache/*
+- [update-docs временные файлы](../docs/deployment_guide.md#update-docs-временные-файлы) — **.tmp .update-docs-cache/ tools/update-docs/*
+- [Метаданные (если не нужны в репозитории)](../docs/deployment_guide.md#метаданные--если-не-нужны-в-репозитории-) — *```*
+- [content/Content.json](../docs/deployment_guide.md#content-content-json) — *```*
+- [content/Description_for_agents.md](../docs/deployment_guide.md#content-description_for_agents-md) — *```  ```yaml*
+    - [Права доступа для GitHub Actions:](../docs/deployment_guide.md#права-доступа-для-github-actions-) — *```yaml permissions: contents: write pull-requests: write*
+  - [🧪 Тестирование интеграции](../docs/deployment_guide.md#--тестирование-интеграции) — *```bash*
+    - [Скрипт проверки интеграции:](../docs/deployment_guide.md#скрипт-проверки-интеграции-) — *```bash*
+- [test_integration.sh](../docs/deployment_guide.md#test_integration-sh) — *echo "🧪 Тестирование интеграции update-docs..."*
+- [Проверка установки](../docs/deployment_guide.md#проверка-установки) — *if ! command -v update-docs &> /dev/null; then echo "❌ update-docs не установлен" exit 1 fi*
+- [Создание тестовой структуры](../docs/deployment_guide.md#создание-тестовой-структуры) — *mkdir -p test-docs/guides echo "# Test" > test-docs/README.md echo "# Guide" > test-docs/guides/setu...*
+- [Тестовый запуск](../docs/deployment_guide.md#тестовый-запуск) — *update-docs --docs test-docs --content-json test-content.json --description-md test-description.md*
+- [Проверка результатов](../docs/deployment_guide.md#проверка-результатов) — *if [[ -f "test-content.json" && -f "test-description.md" ]]; then echo "✅ Интеграция работает коррек...*
+  - [📋 Checklist для внедрения](../docs/deployment_guide.md#--checklist-для-внедрения) — *- [ ] Выбрать способ развертывания - [ ] Настроить структуру папок в целевом репозитории - [ ] Созд*
+  - [🎯 Итог](../docs/deployment_guide.md#--итог) — *Наиболее универсальный подход: 1. **Разработка** → PyPI пакет + локальная установка 2. **Продакшн***
+- [🎯 Лучший подход - Комбинированный](../docs/deployment_guide.md#--лучший-подход---комбинированный) — *1. GitHub Actions (для CI/CD):  - Срабатывает при push/PR с изменениями .md файлов - Автоматически к...*
+- [В целевом репозитории](../docs/deployment_guide.md#в-целевом-репозитории) — *mkdir -p .github/workflows scripts*
+- [1. Копируем GitHub Actions workflow](../docs/deployment_guide.md#1--копируем-github-actions-workflow)
+- [(из артефакта выше)](../docs/deployment_guide.md#-из-артефакта-выше-) — *chmod +x scripts/setup_hooks.sh*
+- [2. Настраиваем pre-commit hook](../docs/deployment_guide.md#2--настраиваем-pre-commit-hook) — *chmod +x scripts/setup_hooks.sh ./scripts/setup_hooks.sh*
+- [3. Для разработки документации](../docs/deployment_guide.md#3--для-разработки-документации) — *pip install watchdog python watch_docs.py ```*
+
 ### ✏️ 👤 [Система логирования CoreTwin Platform](../docs/logging.md)
 **File ID:** `logging-4d45c557`  
 **Автор:** human | **Редактируемый:** Да
@@ -801,6 +920,56 @@
   - [Мониторинг и анализ](../docs/logging.md#мониторинг-и-анализ) — *Логи можно анализировать с помощью: - `grep` для поиска по тегам: `grep "AUTHENTICATION_ERROR" logs*
   - [Ротация логов](../docs/logging.md#ротация-логов) — *Файлы автоматически ротируются: - По размеру (10MB по умолчанию) - По времени (ежедневно в полночь)*
   - [Производительность](../docs/logging.md#производительность) — *- Асинхронное логирование не блокирует основные операции - Буферизация записей для оптимизации I/O*
+
+### ✏️ 👤 [ТЗ: Настройка системы автоматического обновления документации update-docs](../docs/technical_specification.md)
+**File ID:** `technical_specification-cfee903a`  
+**Автор:** human | **Редактируемый:** Да
+
+**Структура заголовков:**
+- [ТЗ: Настройка системы автоматического обновления документации update-docs](../docs/technical_specification.md#тз--настройка-системы-автоматического-обновления-документации-update-docs) — *Настроить автоматическую систему обновления документации, которая будет срабатывать при изменении*
+  - [🎯 Цель проекта](../docs/technical_specification.md#--цель-проекта) — *Настроить автоматическую систему обновления документации, которая будет срабатывать при изменении л*
+  - [📋 Техническое задание](../docs/technical_specification.md#--техническое-задание) — *- ✅ Автоматическое обновление при изменении .md файлов - ✅ Полная изоляция кода update-docs от целе*
+    - [Основные требования:](../docs/technical_specification.md#основные-требования-) — *- ✅ Автоматическое обновление при изменении .md файлов - ✅ Полная изоляция кода update-docs от целев...*
+    - [Архитектура решения:](../docs/technical_specification.md#архитектура-решения-) — *1. **Исходный репозиторий** - содержит код update-docs и публикуется как PyPI пакет 2. **Целевые реп...*
+  - [🏗️ ЭТАП 1: Настройка исходного репозитория (update-docs)](../docs/technical_specification.md#---этап-1--настройка-исходного-репозитория--update-docs-) — *```*
+    - [1.1 Структура проекта](../docs/technical_specification.md#1-1-структура-проекта) — *``` update-docs/ ├── setup.py                           # Конфигурация пакета*
+    - [1.2 Создание setup.py](../docs/technical_specification.md#1-2-создание-setup-py) — *```python from setuptools import setup, find_packages*
+- [setup.py](../docs/technical_specification.md#setup-py) — *from setuptools import setup, find_packages import os*
+- [Читаем README для long_description](../docs/technical_specification.md#читаем-readme-для-long_description) — *with open("README.md", "r", encoding="utf-8") as fh: long_description = fh.read()*
+- [Читаем requirements](../docs/technical_specification.md#читаем-requirements) — *with open("requirements.txt", "r", encoding="utf-8") as fh: requirements = [line.strip() for line in...*
+    - [1.3 Создание pyproject.toml](../docs/technical_specification.md#1-3-создание-pyproject-toml) — *```toml [build-system]*
+- [pyproject.toml](../docs/technical_specification.md#pyproject-toml) — *[build-system] requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"] build-backend = "...*
+    - [1.4 Создание шаблонов](../docs/technical_specification.md#1-4-создание-шаблонов) — *```yaml*
+      - [`templates/github_workflow.yml`](../docs/technical_specification.md#-templates-github_workflow-yml-) — *```yaml name: 📚 Auto Update Documentation*
+- [GitHub Actions workflow для автоматического обновления документации](../docs/technical_specification.md#github-actions-workflow-для-автоматического-обновления-документации) — *name: 📚 Auto Update Documentation  on: push:*
+      - [`templates/pre_commit_hook.sh`](../docs/technical_specification.md#-templates-pre_commit_hook-sh-) — *```bash*
+- [Pre-commit hook для автоматического обновления документации](../docs/technical_specification.md#pre-commit-hook-для-автоматического-обновления-документации) — *echo "🔍 Checking for markdown file changes..."*
+- [Получаем список измененных .md файлов](../docs/technical_specification.md#получаем-список-измененных--md-файлов) — *md_files_changed=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\\.md$' || true)  if [...*
+      - [`templates/watch_docs.py`](../docs/technical_specification.md#-templates-watch_docs-py-) — *```python """ File Watcher для автоматического обновления документации при изменении .md файлов*
+      - [`templates/setup_automation.sh`](../docs/technical_specification.md#-templates-setup_automation-sh-) — *```bash*
+- [Скрипт автоматической настройки update-docs в целевом репозитории](../docs/technical_specification.md#скрипт-автоматической-настройки-update-docs-в-целевом-репозитории) — *set -e  # Прекращаем выполнение при ошибке  echo "🚀 Setting up update-docs automation..."*
+- [Функция для вывода статуса](../docs/technical_specification.md#функция-для-вывода-статуса) — *print_status() { echo "✅ $1" }*
+- [Проверяем, что мы в git репозитории](../docs/technical_specification.md#проверяем--что-мы-в-git-репозитории) — *if [ ! -d ".git" ]; then print_error "This is not a git repository!" echo "💡 Please run this script*
+- [1. Устанавливаем update-docs-system](../docs/technical_specification.md#1--устанавливаем-update-docs-system) — *echo "📦 Installing update-docs-system..." if pip install update-docs-system; then print_status "upda...*
+- [2. Создаем необходимые директории](../docs/technical_specification.md#2--создаем-необходимые-директории) — *echo "📁 Creating directories..." mkdir -p .github/workflows mkdir -p scripts mkdir -p content*
+- [3. Проверяем наличие docs директории с файлами](../docs/technical_specification.md#3--проверяем-наличие-docs-директории-с-файлами) — *if [ ! "$(ls -A docs)" ]; then echo "📝 Creating sample documentation..." cat > docs/README.md << 'EO...*
+- [Project Documentation](../docs/technical_specification.md#project-documentation) — *Welcome to the project documentation!*
+  - [Getting Started](../docs/technical_specification.md#getting-started) — *This documentation is automatically managed by update-docs-system.*
+  - [Contents](../docs/technical_specification.md#contents) — *- [Setup Guide](setup.md) - [API Reference](api/README.md)*
+- [API Reference](../docs/technical_specification.md#api-reference) — *This section contains API documentation.*
+  - [Endpoints](../docs/technical_specification.md#endpoints) — *- GET /api/health - POST /api/data*
+- [Setup Guide](../docs/technical_specification.md#setup-guide) — *Instructions for setting up the project.*
+  - [Prerequisites](../docs/technical_specification.md#prerequisites) — *- Python 3.7+ - Git*
+  - [Installation](../docs/technical_specification.md#installation) — *1. Clone the repository 2. Install dependencies 3. Run the application*
+- [4. Копируем GitHub Actions workflow](../docs/technical_specification.md#4--копируем-github-actions-workflow) — *echo "⚙️  Setting up GitHub Actions..." cat > .github/workflows/update-docs.yml << 'EOF' name: 📚 Aut...*
+- [5. Устанавливаем pre-commit hook](../docs/technical_specification.md#5--устанавливаем-pre-commit-hook) — *echo "🪝 Setting up pre-commit hook..." cat > .git/hooks/pre-commit << 'EOF' echo "🔍 Checking for mar...*
+- [6. Создаем file watcher скрипт](../docs/technical_specification.md#6--создаем-file-watcher-скрипт) — *echo "👀 Setting up file watcher..." pip install watchdog  cat > scripts/watch_docs.py << 'EOF'*
+- [7. Создаем Makefile для удобства](../docs/technical_specification.md#7--создаем-makefile-для-удобства) — *echo "🔧 Creating Makefile..." cat > Makefile << 'EOF' .PHONY: docs-update docs-watch docs-install he...*
+- [8. Создаем .gitignore записи (если файл существует)](../docs/technical_specification.md#8--создаем--gitignore-записи--если-файл-существует-) — *if [ -f ".gitignore" ]; then if ! grep -q "# update-docs" .gitignore; then echo "" >> .gitignore ech...*
+- [update-docs temporary files](../docs/technical_specification.md#update-docs-temporary-files) — **.tmp .update-docs-cache/*
+- [Python](../docs/technical_specification.md#python) — *__pycache__/ *.py[cod] *$py.class *.so*
+- [9. Запускаем первоначальное обновление документации](../docs/technical_specification.md#9--запускаем-первоначальное-обновление-документации) — *echo "🔄 Running initial documentation update..." if update-docs --docs docs --content-json content/C...*
+- [Финальный отчет](../docs/technical_specification.md#финальный-отчет) — *echo "" echo "🎉 Setup completed successfully!" echo "" echo "📋*
 
 ### ✏️ 👤 [Тестирование CoreTwin Platform](../docs/README (4).md)
 **File ID:** `readme--4--539bf89c`  

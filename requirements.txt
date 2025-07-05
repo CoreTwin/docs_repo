@@ -7,3 +7,4 @@ requests>=2.25.0
 pytest-cov>=2.0
 black>=21.0
 flake8>=3.8
+setuptools>=65.0.0
