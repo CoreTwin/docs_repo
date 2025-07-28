@@ -428,7 +428,7 @@ def check_generator_registry(file_path):
     """Проверяет файл в реестре автогенераторов"""
     registry_path = "docs/auto_generated/generator_registry.json"
     
-    if not os.path.exists(registry_path):
+    if not file_path or not os.path.exists(registry_path):
         return False
     
     try:
