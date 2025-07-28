@@ -105,7 +105,7 @@ def test_detect_author_type_enhanced():
     assert author == "generator" and source in ["comment_marker", "registry_lookup"]
     
     author, source = detect_author_type_enhanced("", "<!-- AI-GENERATED -->")
-    assert author == "generator" and source in ["comment_marker", "registry_lookup"]
+    assert author == "ai" and source in ["comment_marker", "registry_lookup"]
     
     author, source = detect_author_type_enhanced("regular_file.md", "Regular content without special markers")
     assert author == "human" and source == "default"

@@ -60,7 +60,6 @@ def test_enhanced_author_detection():
         print("✅ Content.json generation works")
     
     print("✅ All enhanced author detection tests passed!")
-    return True
 
 if __name__ == "__main__":
     test_enhanced_author_detection()

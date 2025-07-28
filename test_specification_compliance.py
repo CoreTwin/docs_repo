@@ -3,6 +3,7 @@
 import json
 import os
 import sys
+import pytest
 sys.path.insert(0, '.')
 
 from update_docs.core import update_content_system
@@ -27,7 +28,7 @@ def test_specification_compliance():
     missing_fields = [field for field in required_fields if field not in sample_entry]
     if missing_fields:
         print(f"❌ Missing required fields: {missing_fields}")
-        return False
+        pytest.fail("failure")
     else:
         print("✅ All required fields present in Content.json")
     
@@ -38,7 +39,7 @@ def test_specification_compliance():
         
         if missing_header_fields:
             print(f"❌ Missing header fields: {missing_header_fields}")
-            return False
+            pytest.fail("failure")
         else:
             print("✅ Header structure compliant with specification")
     
@@ -71,13 +72,12 @@ def test_specification_compliance():
             print("✅ Description_for_agents.md structure compliant")
     else:
         print("❌ Description_for_agents.md not found")
-        return False
+        pytest.fail("failure")
     
     editable_count = sum(1 for entry in content_data if entry.get('editable', False))
     print(f"✅ Editable flags set: {editable_count}/{len(content_data)} files editable")
     
     print("\n=== Specification Compliance Test Complete ===")
-    return True
 
 if __name__ == "__main__":
     success = test_specification_compliance()

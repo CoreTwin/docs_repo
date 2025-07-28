@@ -70,7 +70,8 @@ def test_cli_from_nested_dir(tmp_path):
     nested.mkdir()
 
     env = os.environ.copy()
-    env["PYTHONPATH"] = str(root)
+    repo_root = Path(__file__).resolve().parents[1]
+    env["PYTHONPATH"] = str(repo_root)
 
     result = subprocess.run(
         [sys.executable, "-m", "update_docs.cli", "--docs", "docs", "--toc", "toc.json"],
